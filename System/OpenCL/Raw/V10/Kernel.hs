@@ -23,7 +23,7 @@ import Data.Maybe
 
 
 foreign import ccall "clCreateKernel" raw_clCreateKernel :: Program -> CString -> Ptr CLint -> IO Kernel 
-clCreateKernel program kernel_name = wrapErrorEither $ raw_clCreateKernel program kernel_name 
+clCreateKernel program init_name = withCString init_name (\x -> wrapErrorEither $ raw_clCreateKernel program x)
 
 foreign import ccall "clCreateKernelsInProgram" raw_clCreateKernelsInProgram :: Program -> CLuint -> Ptr Kernel -> Ptr CLuint -> IO CLint 
 clCreateKernelsInProgram :: Program -> CLuint -> IO (Either ErrorCode [Kernel])
