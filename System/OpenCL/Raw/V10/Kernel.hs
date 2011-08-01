@@ -6,6 +6,7 @@ module System.OpenCL.Raw.V10.Kernel
     ,clRetainKernel
     ,clReleaseKernel
     ,clGetKernelInfo
+    ,clSetKernelArg
     ,clGetKernelWorkGroupInfo
     ,clEnqueueNDRangeKernel
     ,clEnqueueTask
