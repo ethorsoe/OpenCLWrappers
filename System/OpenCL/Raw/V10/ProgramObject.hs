@@ -76,11 +76,11 @@ foreign import ccall "clUnloadCompiler" raw_clUnloadCompiler :: IO CLint
 clUnloadCompiler :: IO (Maybe ErrorCode)
 clUnloadCompiler = wrapError $ raw_clUnloadCompiler
 
-foreign import ccall "clGetProgamInfo" raw_clGetProgramInfo :: Program -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
+foreign import ccall "clGetProgramInfo" raw_clGetProgramInfo :: Program -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
 clGetProgramInfo :: Program -> ProgramInfo -> CLsizei -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetProgramInfo program (ProgramInfo param_name) param_value_size = wrapGetInfo (raw_clGetProgramInfo program param_name) param_value_size
 
 foreign import ccall "clGetProgramBuildInfo"  raw_clGetProgramBuildInfo :: Program -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
 clGetProgramBuildInfo :: Program -> ProgramBuildInfo -> CLsizei -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetProgramBuildInfo program (ProgramBuildInfo param_name) param_value_size = wrapGetInfo (raw_clGetProgramInfo program param_name) param_value_size
+clGetProgramBuildInfo program (ProgramBuildInfo param_name) param_value_size = wrapGetInfo (raw_clGetProgramBuildInfo program param_name) param_value_size
 
