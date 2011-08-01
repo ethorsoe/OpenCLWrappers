@@ -26,12 +26,12 @@ type ContextCallback = (CString -> Ptr () -> CLsizei -> Ptr () -> IO ())
 foreign import ccall "clCreateContext" raw_clCreateContext :: Ptr (Ptr CLint) -> CLuint -> Ptr DeviceID -> FunPtr ContextCallback -> Ptr () -> Ptr CLint -> IO Context
 foreign import ccall "wrapper" wrapCreateContextCallback :: ContextCallback -> IO (FunPtr ContextCallback)
 
-clCreateContext :: [ContextProperties] -> [DeviceID] -> ContextCallback -> Ptr () -> IO (Either ErrorCode Context)    
+clCreateContext :: [ContextProperties] -> [DeviceID] -> (Maybe ContextCallback) -> Ptr () -> IO (Either ErrorCode Context)
 clCreateContext properties devices pfn_notify user_dat =
     allocaArray (propertiesN+1) $ \propertiesP -> allocaArray devicesN $ \devicesP -> do
         pokeArray0 nullPtr propertiesP properties
         pokeArray devicesP devices
-        fptr <- wrapCreateContextCallback pfn_notify
+        fptr <- maybe (return nullFunPtr) wrapCreateContextCallback pfn_notify
         wrapErrorEither $ raw_clCreateContext propertiesP (fromIntegral devicesN) devicesP fptr user_dat             
     where propertiesN = length properties
           devicesN = length devices
@@ -39,10 +39,10 @@ clCreateContext properties devices pfn_notify user_dat =
     
 foreign import ccall "clCreateContextFromType" raw_clCreateContextFromType :: Ptr ContextProperties -> CLbitfield -> FunPtr ContextCallback -> Ptr a -> Ptr CLint -> IO Context
 
-clCreateContextFromType :: [ContextProperties] -> DeviceType -> ContextCallback -> Ptr () -> IO (Either ErrorCode Context)
+clCreateContextFromType :: [ContextProperties] -> DeviceType -> (Maybe ContextCallback) -> Ptr () -> IO (Either ErrorCode Context)
 clCreateContextFromType properties (DeviceType device_type) pfn_notify user_data = allocaArray (propertiesN+1) $ \propertiesP -> do
     pokeArray0 nullPtr propertiesP properties
-    fptr <- wrapCreateContextCallback pfn_notify
+    fptr <- maybe (return nullFunPtr) wrapCreateContextCallback pfn_notify
     wrapErrorEither $ raw_clCreateContextFromType propertiesP device_type fptr user_data
     where propertiesN = length properties 
     

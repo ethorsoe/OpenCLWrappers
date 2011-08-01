@@ -63,12 +63,12 @@ clReleaseProgram prog = wrapError $ raw_clReleaseProgram prog
 type BuildProgramCallback = Program -> Ptr () -> IO ()
 foreign import ccall "wrapper" wrapBuildProgramCallback :: BuildProgramCallback -> IO (FunPtr BuildProgramCallback)
 foreign import ccall "clBuildProgram" raw_clBuildProgram :: Program -> CLuint -> Ptr DeviceID -> CString -> FunPtr BuildProgramCallback -> Ptr () -> IO CLint
-clBuildProgram :: Program -> [DeviceID] -> String -> BuildProgramCallback -> Ptr () -> IO (Maybe ErrorCode)
+clBuildProgram :: Program -> [DeviceID] -> String -> (Maybe BuildProgramCallback) -> Ptr () -> IO (Maybe ErrorCode)
 clBuildProgram program devices ops pfn_notifyF user_data = 
     allocaArray num_devices $ \device_list -> 
     withCString ops $ \options -> do 
         pokeArray device_list devices
-        pfn_notify <- wrapBuildProgramCallback pfn_notifyF
+        pfn_notify <- maybe (return nullFunPtr) wrapBuildProgramCallback pfn_notifyF
         wrapError $ raw_clBuildProgram program (fromIntegral num_devices) device_list options pfn_notify user_data
     where num_devices = length devices   
 
