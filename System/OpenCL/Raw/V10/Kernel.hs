@@ -60,13 +60,10 @@ clGetKernelWorkGroupInfo kernel device (KernelWorkGroupInfo param_name) param_va
 foreign import ccall "clEnqueueNDRangeKernel" raw_clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> CLuint -> Ptr CLsizei -> Ptr CLsizei -> Ptr CLsizei -> CLuint -> Ptr Event  -> Ptr Event -> IO CLint
 clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> [CLsizei] -> [CLsizei] -> [Event] -> IO (Either ErrorCode Event) 
 clEnqueueNDRangeKernel queue kernel global_work_sizeL local_work_sizeL event_wait_listL = 
-    allocaArray work_dim $ \global_work_size ->
-    allocaArray work_dim $ \local_work_size ->
-    allocaArray num_events_in_wait_list $ \event_wait_list ->
+    withArray global_work_sizeL $ \global_work_size ->
+    withArrayNull local_work_sizeL $ \local_work_size ->
+    withArrayNull event_wait_listL $ \event_wait_list ->
     alloca $ \event -> do
-        pokeArray global_work_size global_work_sizeL
-        pokeArray local_work_size local_work_sizeL
-        pokeArray event_wait_list event_wait_listL
         err <- wrapError $ raw_clEnqueueNDRangeKernel queue kernel (fromIntegral work_dim) nullPtr global_work_size local_work_size (fromIntegral num_events_in_wait_list) event_wait_list event
         if err == Nothing
             then Right <$> peek event

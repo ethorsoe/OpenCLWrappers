@@ -76,8 +76,7 @@ clGetImageInfo :: Mem -> MemInfo -> CLsizei -> IO (Either ErrorCode (ForeignPtr 
 clGetImageInfo mem (MemInfo param_name) param_value_size = wrapGetInfo (raw_clGetImageInfo mem param_name) param_value_size 
         
 enqueue :: (CommandQueue -> CLuint -> Ptr Event -> Ptr Event -> IO CLint) -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)      
-enqueue fn queue events = alloca $ \event -> allocaArray events_in_wait_list $ \event_wait_list -> do
-    pokeArray event_wait_list events
+enqueue fn queue events = alloca $ \event -> withArrayNull events $ \event_wait_list -> do
     err <- wrapError $ fn queue (fromIntegral events_in_wait_list) event_wait_list event
     if err == Nothing 
         then Right <$> peek event 

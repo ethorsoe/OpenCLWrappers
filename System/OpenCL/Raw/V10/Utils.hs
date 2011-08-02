@@ -28,7 +28,12 @@ wrapGetInfo raw_infoFn param_size = alloca $ \value_size_ret -> do
         then peek value_size_ret >>= \valsz -> return . Right $ (param_data,valsz)
         else return . Left $ fromJust ret        
 
+withArrayNull0 a as = withArrayNull $ as ++ [a]
 
+withArrayNull :: Storable a => [a] -> (Ptr a -> IO b) -> IO b
+withArrayNull as f = if null as
+                           then f nullPtr
+                           else withArray as f
 
 nest :: [(r -> a) -> a] -> ([r] -> a) -> a
 nest xs = runCont (sequence (map cont xs))
