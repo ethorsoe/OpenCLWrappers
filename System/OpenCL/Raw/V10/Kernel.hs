@@ -50,12 +50,11 @@ clSetKernelArg kernel arg_index arg_size arg_value =
     wrapError $ raw_clSetKernelArg kernel arg_index arg_size arg_value
 
 foreign import ccall "clGetKernelInfo" raw_clGetKernelInfo :: Kernel -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetKernelInfo :: Kernel -> KernelInfo -> CLsizei -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetKernelInfo kernel (KernelInfo param_name) param_value_size = wrapGetInfo (raw_clGetKernelInfo kernel param_name) param_value_size
-
+clGetKernelInfo :: Kernel -> KernelInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetKernelInfo kernel (KernelInfo param_name) = wrapGetInfo (raw_clGetKernelInfo kernel param_name)
 foreign import ccall "clGetKernelWorkGroupInfo" raw_clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> KernelWorkGroupInfo -> CLsizei -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetKernelWorkGroupInfo kernel device (KernelWorkGroupInfo param_name) param_value_size = wrapGetInfo (raw_clGetKernelWorkGroupInfo kernel device param_name) param_value_size
+clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> KernelWorkGroupInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetKernelWorkGroupInfo kernel device (KernelWorkGroupInfo param_name) = wrapGetInfo (raw_clGetKernelWorkGroupInfo kernel device param_name)
 
 foreign import ccall "clEnqueueNDRangeKernel" raw_clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> CLuint -> Ptr CLsizei -> Ptr CLsizei -> Ptr CLsizei -> CLuint -> Ptr Event  -> Ptr Event -> IO CLint
 clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> [CLsizei] -> [CLsizei] -> [Event] -> IO (Either ErrorCode Event) 

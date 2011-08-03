@@ -22,8 +22,8 @@ clWaitForEvents evts = allocaArray nEvents $ \eventP -> pokeArray eventP evts >>
     where nEvents = length evts
                             
 foreign import ccall "clGetEventInfo" raw_clGetEventInfo :: Event -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetEventInfo :: Event -> EventInfo -> CLsizei -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetEventInfo obj (EventInfo param_name) param_size = wrapGetInfo (raw_clGetEventInfo obj param_name) param_size
+clGetEventInfo :: Event -> EventInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetEventInfo obj (EventInfo param_name) = wrapGetInfo (raw_clGetEventInfo obj param_name)
 
 foreign import ccall "clRetainEvent" raw_clRetainEvent :: Event -> IO CLint 
 clRetainEvent :: Event -> IO (Maybe ErrorCode)
@@ -34,5 +34,5 @@ clReleaseEvent :: Event -> IO (Maybe ErrorCode)
 clReleaseEvent evt = wrapError $ raw_clReleaseEvent evt 
 
 foreign import ccall "clGetEventProfilingInfo" raw_clGetEventProfilingInfo :: Event -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetEventProfilingInfo :: Event -> ProfilingInfo -> CLsizei -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetEventProfilingInfo obj (ProfilingInfo param_name) param_size = wrapGetInfo (raw_clGetEventProfilingInfo obj param_name) param_size                                
+clGetEventProfilingInfo :: Event -> ProfilingInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetEventProfilingInfo obj (ProfilingInfo param_name) = wrapGetInfo (raw_clGetEventProfilingInfo obj param_name)
