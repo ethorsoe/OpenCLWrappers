@@ -20,13 +20,13 @@ wrapErrorEither thunk = alloca $ \errorP -> do
         then return . Right $ ret
         else return . Left $ err 
                 
-wrapGetInfo :: (CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint) -> IO (Either ErrorCode (ForeignPtr ()))
+wrapGetInfo :: (CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint) -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 wrapGetInfo raw_infoFn = alloca $ \value_size_ret ->
     wrapError (raw_infoFn 0 nullPtr value_size_ret) >>=
         maybe (do retsize <- peek value_size_ret
                   param_data <- (mallocForeignPtrBytes . fromIntegral $ retsize) :: IO (ForeignPtr ())
                   wrapError (withForeignPtr param_data $ \param_dataP -> raw_infoFn retsize param_dataP nullPtr) >>=
-                      maybe (return (Right param_data)) (return.Left))
+                      maybe (return (Right (param_data,retsize))) (return.Left))
                   (return.Left)
 
 withArrayNull0 a as = withArrayNull $ as ++ [a]

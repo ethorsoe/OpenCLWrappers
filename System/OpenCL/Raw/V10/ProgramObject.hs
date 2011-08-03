@@ -77,10 +77,10 @@ clUnloadCompiler :: IO (Maybe ErrorCode)
 clUnloadCompiler = wrapError $ raw_clUnloadCompiler
 
 foreign import ccall "clGetProgramInfo" raw_clGetProgramInfo :: Program -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetProgramInfo :: Program -> ProgramInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetProgramInfo :: Program -> ProgramInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetProgramInfo program (ProgramInfo param_name) = wrapGetInfo $ raw_clGetProgramInfo program param_name
 
 foreign import ccall "clGetProgramBuildInfo"  raw_clGetProgramBuildInfo :: Program -> DeviceID -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetProgramBuildInfo :: Program -> DeviceID -> ProgramBuildInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetProgramBuildInfo :: Program -> DeviceID -> ProgramBuildInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetProgramBuildInfo program devID (ProgramBuildInfo param_name) = wrapGetInfo $ raw_clGetProgramBuildInfo program devID param_name
 

@@ -68,11 +68,11 @@ clGetSupportedImageFormats ctx (MemFlags flags) (MemObjectType image_type) = all
           err
 
 foreign import ccall "clGetMemObjectInfo" raw_clGetMemObjectInfo :: Mem -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetMemObjectInfo :: Mem -> MemInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetMemObjectInfo :: Mem -> MemInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetMemObjectInfo mem (MemInfo param_name) = wrapGetInfo (raw_clGetMemObjectInfo mem param_name)
 
 foreign import ccall "clGetImageInfo" raw_clGetImageInfo :: Mem -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetImageInfo :: Mem -> MemInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetImageInfo :: Mem -> MemInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetImageInfo mem (MemInfo param_name) = wrapGetInfo (raw_clGetImageInfo mem param_name)
         
 enqueue :: (CommandQueue -> CLuint -> Ptr Event -> Ptr Event -> IO CLint) -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)      

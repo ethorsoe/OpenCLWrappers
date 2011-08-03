@@ -55,7 +55,7 @@ clReleaseContext :: Context -> IO (Maybe ErrorCode)
 clReleaseContext ctx = wrapError (raw_clReleaseContext ctx)
 
 foreign import ccall "clGetContextInfo" raw_clGetContextInfo :: Context -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetContextInfo :: Context -> ContextInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetContextInfo :: Context -> ContextInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetContextInfo ctx (ContextInfo param_name) = wrapGetInfo (raw_clGetContextInfo ctx param_name)
 
 

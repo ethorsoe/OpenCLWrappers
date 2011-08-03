@@ -22,6 +22,6 @@ clGetDeviceIDs platform (DeviceType device_type) num_entries = alloca $ \(device
       else return $ Left errcode
       
 foreign import ccall "clGetDeviceInfo" raw_clGetDeviceInfo :: DeviceID -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetDeviceInfo :: DeviceID -> DeviceInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetDeviceInfo :: DeviceID -> DeviceInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetDeviceInfo obj (DeviceInfo param_name) = wrapGetInfo (raw_clGetDeviceInfo obj param_name)
 

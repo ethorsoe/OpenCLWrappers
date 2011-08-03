@@ -32,7 +32,7 @@ clReleaseCommandQueue :: CommandQueue -> IO (Maybe ErrorCode)
 clReleaseCommandQueue queue = wrapError (raw_clReleaseCommandQueue queue)
 
 foreign import ccall "clGetCommandQueueInfo" raw_clGetCommandQueueInfo :: CommandQueue -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetCommandQueueInfo :: CommandQueue -> CommandQueueInfo -> IO (Either ErrorCode (ForeignPtr ()))
+clGetCommandQueueInfo :: CommandQueue -> CommandQueueInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetCommandQueueInfo ctx (CommandQueueInfo param_name) = wrapGetInfo (raw_clGetCommandQueueInfo ctx param_name)
 
 foreign import ccall "clSetCommandQueueProperty" raw_clSetCommandQueueProperty :: CommandQueue -> CLbitfield -> CLbool -> Ptr CLbitfield -> IO CLint
