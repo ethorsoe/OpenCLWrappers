@@ -58,6 +58,7 @@ newtype AddressingMode = AddressingMode CLuint
 newtype FilterMode = FilterMode CLuint
 newtype ProgramInfo = ProgramInfo CLuint
 newtype ProgramBuildInfo = ProgramBuildInfo CLuint
+    deriving (Eq)
 newtype BuildStatus = BuildStatus CLint
 newtype DeviceInfo = DeviceInfo CLuint
 newtype DeviceFPConfig = DeviceFPConfig CLbitfield

@@ -81,6 +81,9 @@ clGetProgramInfo :: Program -> ProgramInfo -> IO (Either ErrorCode (ForeignPtr (
 clGetProgramInfo program (ProgramInfo param_name) = wrapGetInfo $ raw_clGetProgramInfo program param_name
 
 foreign import ccall "clGetProgramBuildInfo"  raw_clGetProgramBuildInfo :: Program -> DeviceID -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
-clGetProgramBuildInfo :: Program -> DeviceID -> ProgramBuildInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetProgramBuildInfo program devID (ProgramBuildInfo param_name) = wrapGetInfo $ raw_clGetProgramBuildInfo program devID param_name
+clGetProgramBuildInfo :: Program -> DeviceID -> ProgramBuildInfo -> IO (Either ErrorCode (Either String BuildStatus))
+clGetProgramBuildInfo program devID (ProgramBuildInfo param_name) = (wrapGetInfo $ raw_clGetProgramBuildInfo program devID param_name) >>=
+    either (return.Left) (\(x,_) -> withForeignPtr x (\y -> if ((ProgramBuildInfo param_name) == clProgramBuildLog)
+        then fmap (Right . Left) (peekCString $ castPtr y)
+        else fmap (Right . Right . BuildStatus) (peek $ castPtr y) ))
 
