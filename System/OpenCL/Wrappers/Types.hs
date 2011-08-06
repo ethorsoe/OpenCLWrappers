@@ -58,11 +58,18 @@ newtype SamplerInfo = SamplerInfo CLuint
 newtype AddressingMode = AddressingMode CLuint
 newtype FilterMode = FilterMode CLuint
 newtype ProgramInfo = ProgramInfo CLuint
+    deriving (Eq)
 newtype ProgramBuildInfo = ProgramBuildInfo CLuint
     deriving (Eq)
 newtype BuildStatus = BuildStatus CLint
+    deriving (Eq)
 newtype DeviceInfo = DeviceInfo CLuint
 newtype DeviceFPConfig = DeviceFPConfig CLbitfield
+
+data CLProgramInfoRetval = ProgramInfoRetvalCLUint CLuint | ProgramInfoRetvalContext Context | ProgramInfoRetvalDeviceIDList [DeviceID] | ProgramInfoRetvalString String | ProgramInfoRetvalPtrList [Ptr ()] | ProgramInfoRetvalCLsizeiList [CLsizei]
+    deriving(Eq)
+data CLProgramBuildInfoRetval = ProgramBuildInfoRetvalBuildStatus BuildStatus | ProgramBuildInfoRetvalString String
+    deriving(Eq)
 
 type ContextCallback = (CString -> Ptr () -> CLsizei -> Ptr () -> IO ())
 type NativeKernelCallback = Ptr () -> IO ()

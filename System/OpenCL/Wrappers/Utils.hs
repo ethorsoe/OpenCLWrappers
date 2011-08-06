@@ -8,6 +8,8 @@ import System.OpenCL.Wrappers.Types
 import Control.Applicative
 import Data.Maybe
 import Control.Monad.Cont
+import Data.Bits((.|.))
+import Unsafe.Coerce(unsafeCoerce)
 
 wrapError :: IO CLint -> IO (Maybe ErrorCode)
 wrapError thunk = thunk >>= \errcode -> if ErrorCode errcode == clSuccess then return Nothing else return . Just . ErrorCode $ errcode
@@ -42,3 +44,19 @@ nest xs = runCont (sequence (map cont xs))
 withCStringArray0 :: [String] -> (Ptr CString -> IO a) -> IO a
 withCStringArray0 strings act = nest (map withCString strings)
                                      (\rs -> withArray0 nullPtr rs act)
+
+peekOneInfo :: Storable a => (a -> b) -> ForeignPtr () -> IO b
+peekOneInfo f x = withForeignPtr x (\y -> fmap f (peek $ castPtr y))
+
+peekManyInfo :: Storable a => ([a] -> b) -> ForeignPtr () -> CLsizei -> IO b
+peekManyInfo f x size = do
+    c <- return undefined
+    a <- withForeignPtr x (\y -> (peekArray ( div (fromIntegral size) $ sizeOf c) $ castPtr y))
+    return (c:a)
+    return $ f a
+
+peekStringInfo :: (String -> b) -> ForeignPtr () -> IO b
+peekStringInfo f x = withForeignPtr x (\y -> fmap f (peekCString $ castPtr y))
+
+combineOr :: [a] -> a
+combineOr x = unsafeCoerce $ foldl (\x y -> x .|. unsafeCoerce y) (0 :: CLuint) x

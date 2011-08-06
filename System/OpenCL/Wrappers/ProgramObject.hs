@@ -68,11 +68,21 @@ clBuildProgram program devices ops pfn_notifyF user_data =
 clUnloadCompiler :: IO (Maybe ErrorCode)
 clUnloadCompiler = wrapError $ raw_clUnloadCompiler
 
-clGetProgramInfo :: Program -> ProgramInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetProgramInfo program (ProgramInfo param_name) = wrapGetInfo $ raw_clGetProgramInfo program param_name
+clGetProgramInfo :: Program -> ProgramInfo -> IO (Either ErrorCode CLProgramInfoRetval)
+clGetProgramInfo program (ProgramInfo param_name) = (wrapGetInfo $ raw_clGetProgramInfo program param_name) >>=
+    either (return.Left) (\(x,size) -> fmap Right $ let c = (ProgramInfo param_name) in case () of 
+        ()
+            | c == clProgramReferenceCount -> peekOneInfo ProgramInfoRetvalCLUint x
+            | c == clProgramContext        -> peekOneInfo ProgramInfoRetvalContext x
+            | c == clProgramNumDevices     -> peekOneInfo ProgramInfoRetvalCLUint x
+            | c == clProgramDevices        -> peekManyInfo ProgramInfoRetvalDeviceIDList x size
+            | c == clProgramSource         -> peekStringInfo ProgramInfoRetvalString x
+            | c == clProgramBinarySizes    -> peekManyInfo ProgramInfoRetvalCLsizeiList x size
+            | c == clProgramBinaries       -> peekManyInfo ProgramInfoRetvalPtrList x size )
 
-clGetProgramBuildInfo :: Program -> DeviceID -> ProgramBuildInfo -> IO (Either ErrorCode (Either String BuildStatus))
+clGetProgramBuildInfo :: Program -> DeviceID -> ProgramBuildInfo -> IO (Either ErrorCode CLProgramBuildInfoRetval)
 clGetProgramBuildInfo program devID (ProgramBuildInfo param_name) = (wrapGetInfo $ raw_clGetProgramBuildInfo program devID param_name) >>=
-    either (return.Left) (\(x,_) -> withForeignPtr x (\y -> if ((ProgramBuildInfo param_name) == clProgramBuildLog)
-        then fmap (Right . Left) (peekCString $ castPtr y)
-        else fmap (Right . Right . BuildStatus) (peek $ castPtr y) ))
+    either (return.Left) (\(x,_) -> fmap Right $ let c = (ProgramBuildInfo param_name) in case () of
+        ()
+            | c == clProgramBuildStatus -> peekOneInfo (ProgramBuildInfoRetvalBuildStatus . BuildStatus) x
+            | True                      -> peekStringInfo (ProgramBuildInfoRetvalString) x )
