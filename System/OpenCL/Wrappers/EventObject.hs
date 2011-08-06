@@ -1,6 +1,5 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 {-| Conforms to section 5.7 of the OpenCL 1.0 specification -}
-module System.OpenCL.Raw.V10.EventObject 
+module System.OpenCL.Wrappers.EventObject 
     (clWaitForEvents
     ,clGetEventInfo
     ,clRetainEvent
@@ -8,31 +7,27 @@ module System.OpenCL.Raw.V10.EventObject
     ,clGetEventProfilingInfo)
 where 
 
-import System.OpenCL.Raw.V10.Types
-import System.OpenCL.Raw.V10.Errors
-import System.OpenCL.Raw.V10.Utils
-import System.OpenCL.Raw.V10.Utils
+import System.OpenCL.Wrappers.Types
+import System.OpenCL.Wrappers.Errors
+import System.OpenCL.Wrappers.Utils
+import System.OpenCL.Wrappers.Utils
+import System.OpenCL.Wrappers.Raw
 import Foreign
 import Control.Applicative
 
 
-foreign import ccall "clWaitForEvents" raw_clWaitForEvents :: CLuint -> Ptr Event -> IO CLint
 clWaitForEvents :: [Event] -> IO (Maybe ErrorCode)
 clWaitForEvents evts = allocaArray nEvents $ \eventP -> pokeArray eventP evts >> (wrapError $ raw_clWaitForEvents (fromIntegral nEvents) eventP)
     where nEvents = length evts
                             
-foreign import ccall "clGetEventInfo" raw_clGetEventInfo :: Event -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
 clGetEventInfo :: Event -> EventInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetEventInfo obj (EventInfo param_name) = wrapGetInfo (raw_clGetEventInfo obj param_name)
 
-foreign import ccall "clRetainEvent" raw_clRetainEvent :: Event -> IO CLint 
 clRetainEvent :: Event -> IO (Maybe ErrorCode)
 clRetainEvent evt = wrapError $ raw_clRetainEvent evt
 
-foreign import ccall "clReleaseEvent" raw_clReleaseEvent :: Event -> IO CLint 
 clReleaseEvent :: Event -> IO (Maybe ErrorCode)
 clReleaseEvent evt = wrapError $ raw_clReleaseEvent evt 
 
-foreign import ccall "clGetEventProfilingInfo" raw_clGetEventProfilingInfo :: Event -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
 clGetEventProfilingInfo :: Event -> ProfilingInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetEventProfilingInfo obj (ProfilingInfo param_name) = wrapGetInfo (raw_clGetEventProfilingInfo obj param_name)

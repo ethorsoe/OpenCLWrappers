@@ -1,7 +1,7 @@
 {-| A collection of all the error codes that OpenCL functions return -}
-module System.OpenCL.Raw.V10.Errors where
+module System.OpenCL.Wrappers.Errors where
 
-import System.OpenCL.Raw.V10.Types
+import System.OpenCL.Wrappers.Types
 
 clSuccess :: ErrorCode
 clSuccess = ErrorCode (0)

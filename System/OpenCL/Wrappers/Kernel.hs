@@ -1,6 +1,5 @@
-{-# LANGUAGE ForeignFunctionInterface #-}
 {-| Conforms to section 5.5 of the OpenCL 1.0 specification -}
-module System.OpenCL.Raw.V10.Kernel 
+module System.OpenCL.Wrappers.Kernel 
     (clCreateKernel
     ,clCreateKernelsInProgram
     ,clRetainKernel
@@ -13,19 +12,18 @@ module System.OpenCL.Raw.V10.Kernel
     ,clEnqueueNativeKernel)
 where
 
-import System.OpenCL.Raw.V10.Types
-import System.OpenCL.Raw.V10.Errors
-import System.OpenCL.Raw.V10.Utils
+import System.OpenCL.Wrappers.Types
+import System.OpenCL.Wrappers.Errors
+import System.OpenCL.Wrappers.Utils
+import System.OpenCL.Wrappers.Raw
 import Foreign
 import Foreign.C
 import Control.Applicative
 import Data.Maybe
 
 
-foreign import ccall "clCreateKernel" raw_clCreateKernel :: Program -> CString -> Ptr CLint -> IO Kernel 
 clCreateKernel program init_name = withCString init_name (\x -> wrapErrorEither $ raw_clCreateKernel program x)
 
-foreign import ccall "clCreateKernelsInProgram" raw_clCreateKernelsInProgram :: Program -> CLuint -> Ptr Kernel -> Ptr CLuint -> IO CLint 
 clCreateKernelsInProgram :: Program -> CLuint -> IO (Either ErrorCode [Kernel])
 clCreateKernelsInProgram program num_kernels = allocaArray (fromIntegral num_kernels) $ \kernels -> alloca $ \num_kernels_ret -> do
     err <- wrapError $ raw_clCreateKernelsInProgram program num_kernels kernels num_kernels_ret
@@ -36,27 +34,22 @@ clCreateKernelsInProgram program num_kernels = allocaArray (fromIntegral num_ker
         else
             return $ Left . fromJust $ err
 
-foreign import ccall "clRetainKernel" raw_clRetainKernel :: Kernel -> IO CLint 
 clRetainKernel :: Kernel -> IO (Maybe ErrorCode)
 clRetainKernel kernel = wrapError $ raw_clRetainKernel kernel
 
-foreign import ccall "clReleaseKernel" raw_clReleaseKernel :: Kernel -> IO CLint 
 clReleaseKernel :: Kernel -> IO (Maybe ErrorCode)
 clReleaseKernel kernel = wrapError $ raw_clRetainKernel kernel
 
-foreign import ccall "clSetKernelArg" raw_clSetKernelArg :: Kernel -> CLuint -> CLsizei -> Ptr () -> IO CLint
 clSetKernelArg :: Kernel -> CLuint -> CLsizei -> Ptr () -> IO (Maybe ErrorCode)
 clSetKernelArg kernel arg_index arg_size arg_value = 
     wrapError $ raw_clSetKernelArg kernel arg_index arg_size arg_value
 
-foreign import ccall "clGetKernelInfo" raw_clGetKernelInfo :: Kernel -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
 clGetKernelInfo :: Kernel -> KernelInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetKernelInfo kernel (KernelInfo param_name) = wrapGetInfo (raw_clGetKernelInfo kernel param_name)
-foreign import ccall "clGetKernelWorkGroupInfo" raw_clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
+
 clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> KernelWorkGroupInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
 clGetKernelWorkGroupInfo kernel device (KernelWorkGroupInfo param_name) = wrapGetInfo (raw_clGetKernelWorkGroupInfo kernel device param_name)
 
-foreign import ccall "clEnqueueNDRangeKernel" raw_clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> CLuint -> Ptr CLsizei -> Ptr CLsizei -> Ptr CLsizei -> CLuint -> Ptr Event  -> Ptr Event -> IO CLint
 clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> [CLsizei] -> [CLsizei] -> [Event] -> IO (Either ErrorCode Event) 
 clEnqueueNDRangeKernel queue kernel global_work_sizeL local_work_sizeL event_wait_listL = 
     withArray global_work_sizeL $ \global_work_size ->
@@ -70,7 +63,6 @@ clEnqueueNDRangeKernel queue kernel global_work_sizeL local_work_sizeL event_wai
     where work_dim = length global_work_sizeL
           num_events_in_wait_list = length event_wait_listL
         
-foreign import ccall "clEnqueueTask" raw_clEnqueueTask :: CommandQueue -> Kernel -> CLuint -> Ptr Event -> Ptr Event -> IO CLint
 clEnqueueTask :: CommandQueue -> Kernel -> [Event] -> IO (Either ErrorCode Event)
 clEnqueueTask queue kernel event_wait_listL = 
     allocaArray num_events_in_wait_list $ \event_wait_list ->
@@ -82,10 +74,7 @@ clEnqueueTask queue kernel event_wait_listL =
             else return $ Left . fromJust $ err
     where num_events_in_wait_list = length event_wait_listL
 
-type NKCallbackFunction = Ptr () -> IO ()
-foreign import ccall "wrapper" wrapNativeKernelCallback :: NKCallbackFunction -> IO (FunPtr NKCallbackFunction)
-foreign import ccall "clEnqueueNativeKernel" raw_clEnqueueNativeKernel :: FunPtr NKCallbackFunction -> Ptr () -> CLsizei -> CLuint -> Ptr Mem -> Ptr (Ptr ()) -> CLuint -> Ptr Event -> Ptr Event -> IO CLint 
-clEnqueueNativeKernel :: NKCallbackFunction -> Ptr () -> CLsizei -> [Mem] -> [Ptr ()] -> [Event] -> IO (Either ErrorCode Event)
+clEnqueueNativeKernel :: NativeKernelCallback -> Ptr () -> CLsizei -> [Mem] -> [Ptr ()] -> [Event] -> IO (Either ErrorCode Event)
 clEnqueueNativeKernel user_funcF args cb_args mem_listL args_mem_locL event_wait_listL = 
     allocaArray num_events_in_wait_list $ \event_wait_list ->
     allocaArray num_mem_objects $ \mem_list ->
@@ -101,6 +90,3 @@ clEnqueueNativeKernel user_funcF args cb_args mem_listL args_mem_locL event_wait
             else return $ Left . fromJust $ err
     where num_events_in_wait_list = length event_wait_listL
           num_mem_objects = length mem_listL
-
-
-

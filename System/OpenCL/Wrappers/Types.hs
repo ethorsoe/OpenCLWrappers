@@ -1,7 +1,8 @@
 {-| Declaration of types, bounds and constants for OpenCL 1.0 -}
-module System.OpenCL.Raw.V10.Types where
+module System.OpenCL.Wrappers.Types where
 
 import Foreign.C.Types
+import Foreign.C.String(CString)
 import Foreign
 
 data PlatformIDc = PlatformIDc
@@ -62,6 +63,10 @@ newtype ProgramBuildInfo = ProgramBuildInfo CLuint
 newtype BuildStatus = BuildStatus CLint
 newtype DeviceInfo = DeviceInfo CLuint
 newtype DeviceFPConfig = DeviceFPConfig CLbitfield
+
+type ContextCallback = (CString -> Ptr () -> CLsizei -> Ptr () -> IO ())
+type NativeKernelCallback = Ptr () -> IO ()
+type BuildProgramCallback = Program -> Ptr () -> IO ()
 
 clQueueOutOfOrderExecModeEnable :: CommandQueueProperties 
 clQueueOutOfOrderExecModeEnable = CommandQueueProperties (1`shiftL`0)

@@ -1,10 +1,10 @@
 {-| OpenCL utility functions for improving FFI wrapper code. -}
-module System.OpenCL.Raw.V10.Utils where
+module System.OpenCL.Wrappers.Utils where
 
 import Foreign
 import Foreign.C
-import System.OpenCL.Raw.V10.Errors
-import System.OpenCL.Raw.V10.Types
+import System.OpenCL.Wrappers.Errors
+import System.OpenCL.Wrappers.Types
 import Control.Applicative
 import Data.Maybe
 import Control.Monad.Cont

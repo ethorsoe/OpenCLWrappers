@@ -1,0 +1,64 @@
+name: OpenCLWrappers
+version: 0.0.0
+cabal-version: >=1.2
+build-type: Simple
+license: BSD3
+license-file: LICENSE
+copyright: Renaissance Computing Institute, Emil Karlson
+maintainer: Emil Karlson
+stability: Experimental
+homepage: http://vis.renci.org/jeff/opencl
+package-url:
+bug-reports:
+synopsis: The OpenCL Standard for heterogenous data-parallel computing
+description: The OpenCL system for open heterogenous data parallel supercomputing.
+
+ **General Notes on the differences between Haskell and the OpenCL-C implementation**
+
+    * Side-effectful procedures capable of returning an error code only return a Maybe ErrorCode, with Nothing returned upon success
+
+    * Procedures which follow the pattern of returning a pointer to an object and taking a final parameter as an error code instead return Either ErrorCode ObjectType
+
+    * Enumerations and constants are replaced by newtypes for the sake of type-safety.  
+
+category: FFI
+author: J.R. Heard, Emil Karlson
+
+Library
+  exposed-modules: System.OpenCL.Wrappers.CommandQueue
+                   System.OpenCL.Wrappers.Context
+                   System.OpenCL.Wrappers.DeviceInfo
+                   System.OpenCL.Wrappers.Errors
+                   System.OpenCL.Wrappers.Etc
+                   System.OpenCL.Wrappers.EventObject
+                   System.OpenCL.Wrappers.FlushFinish
+                   System.OpenCL.Wrappers.Kernel
+                   System.OpenCL.Wrappers.MemoryObject
+                   System.OpenCL.Wrappers.OutOfOrder
+                   System.OpenCL.Wrappers.PlatformInfo
+                   System.OpenCL.Wrappers.ProgramObject
+                   System.OpenCL.Wrappers.Sampler
+                   System.OpenCL.Wrappers.Types
+                   System.OpenCL.Wrappers.Raw
+                   System.OpenCL.Wrappers
+  build-depends: base <= 4.4,
+                 bytestring -any,
+                 mtl >= 2 && < 2.1
+  exposed: True
+  buildable: True
+  build-tools:
+  cpp-options:
+  cc-options:
+  ld-options:
+  pkgconfig-depends:
+  frameworks:
+  c-sources:
+  extensions:
+  extra-libraries:
+  extra-lib-dirs:
+  includes:
+  install-includes:
+  include-dirs:
+  hs-source-dirs: .
+  other-modules: System.OpenCL.Wrappers.Utils
+

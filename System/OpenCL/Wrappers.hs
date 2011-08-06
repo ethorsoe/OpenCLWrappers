@@ -1,7 +1,7 @@
 {-|
     The OpenCL system for open heterogenous data parallel supercomputing.
     
-    Wrapper to the FFI written and maintained by Jeff Heard of the Renaissance Computing Institute <mailto:jeff@renci.org>
+    A fork of the FFI wrapper OpenCLRaw by Jeff Heard of the Renaissance Computing Institute.
     
     From the introduction: 
     
@@ -17,7 +17,7 @@
     graphics applications that combine general parallel compute algorithms with graphics rendering 
     pipelines. 
 
-    OpenCL consists of an API for coordinating parallel computation across 
+    OpenCL consists of an API for coordinating parallel computation across
     heterogeneous processors; and a cross-platform programming language with a well- 
     specified computation environment.  The OpenCL standard: 
 
@@ -38,39 +38,38 @@
     * Procedures which follow the pattern of returning a pointer to an object and taking a final parameter as an error code instead
       return Either ErrorCode @ObjectType@ 
       
-    * Procedures which prefix with clGetInfo* merely take the object, parameter name, and parameter size to allocate.  The allocation
-      handled by OpenCLRaw and returned as a Haskell-managed @ForeignPtr ()@
-      
     * Enumerations and constants are replaced by newtypes for the sake of type-safety.
 -}
-module System.OpenCL.Raw.V10 
-    (module System.OpenCL.Raw.V10.CommandQueue
-    ,module System.OpenCL.Raw.V10.Context
-    ,module System.OpenCL.Raw.V10.DeviceInfo
-    ,module System.OpenCL.Raw.V10.Errors
-    ,module System.OpenCL.Raw.V10.Etc
-    ,module System.OpenCL.Raw.V10.EventObject
-    ,module System.OpenCL.Raw.V10.FlushFinish
-    ,module System.OpenCL.Raw.V10.Kernel
-    ,module System.OpenCL.Raw.V10.MemoryObject
-    ,module System.OpenCL.Raw.V10.OutOfOrder
-    ,module System.OpenCL.Raw.V10.PlatformInfo
-    ,module System.OpenCL.Raw.V10.ProgramObject
-    ,module System.OpenCL.Raw.V10.Sampler
-    ,module System.OpenCL.Raw.V10.Types)    
+module System.OpenCL.Wrappers 
+    (module System.OpenCL.Wrappers.CommandQueue
+    ,module System.OpenCL.Wrappers.Context
+    ,module System.OpenCL.Wrappers.DeviceInfo
+    ,module System.OpenCL.Wrappers.Errors
+    ,module System.OpenCL.Wrappers.Etc
+    ,module System.OpenCL.Wrappers.EventObject
+    ,module System.OpenCL.Wrappers.FlushFinish
+    ,module System.OpenCL.Wrappers.Kernel
+    ,module System.OpenCL.Wrappers.MemoryObject
+    ,module System.OpenCL.Wrappers.OutOfOrder
+    ,module System.OpenCL.Wrappers.PlatformInfo
+    ,module System.OpenCL.Wrappers.ProgramObject
+    ,module System.OpenCL.Wrappers.Sampler
+    ,module System.OpenCL.Wrappers.Types    
+    ,module System.OpenCL.Wrappers.Raw)    
 where
 
-import System.OpenCL.Raw.V10.CommandQueue
-import System.OpenCL.Raw.V10.Context
-import System.OpenCL.Raw.V10.DeviceInfo
-import System.OpenCL.Raw.V10.Errors
-import System.OpenCL.Raw.V10.Etc
-import System.OpenCL.Raw.V10.EventObject
-import System.OpenCL.Raw.V10.FlushFinish
-import System.OpenCL.Raw.V10.Kernel
-import System.OpenCL.Raw.V10.MemoryObject
-import System.OpenCL.Raw.V10.OutOfOrder
-import System.OpenCL.Raw.V10.PlatformInfo
-import System.OpenCL.Raw.V10.ProgramObject
-import System.OpenCL.Raw.V10.Sampler
-import System.OpenCL.Raw.V10.Types
+import System.OpenCL.Wrappers.CommandQueue
+import System.OpenCL.Wrappers.Context
+import System.OpenCL.Wrappers.DeviceInfo
+import System.OpenCL.Wrappers.Errors
+import System.OpenCL.Wrappers.Etc
+import System.OpenCL.Wrappers.EventObject
+import System.OpenCL.Wrappers.FlushFinish
+import System.OpenCL.Wrappers.Kernel
+import System.OpenCL.Wrappers.MemoryObject
+import System.OpenCL.Wrappers.OutOfOrder
+import System.OpenCL.Wrappers.PlatformInfo
+import System.OpenCL.Wrappers.ProgramObject
+import System.OpenCL.Wrappers.Sampler
+import System.OpenCL.Wrappers.Types
+import System.OpenCL.Wrappers.Raw
