@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-| Declaration of types, bounds and constants for OpenCL 1.0 -}
 module System.OpenCL.Wrappers.Types where
 
@@ -40,8 +41,10 @@ type ImageFormat = (ChannelOrder,ChannelType)
 newtype ChannelOrder = ChannelOrder CLuint
 newtype ChannelType = ChannelType CLuint
 newtype DeviceType = DeviceType CLbitfield
+    deriving (Storable)
 newtype ContextInfo = ContextInfo CLuint
 newtype CommandQueueProperties = CommandQueueProperties CLbitfield
+    deriving (Storable)
 newtype CommandQueueInfo = CommandQueueInfo CLuint
 newtype ErrorCode = ErrorCode CLint deriving (Eq,Ord,Show,Read)
 newtype EventInfo = EventInfo CLuint
@@ -64,11 +67,16 @@ newtype ProgramBuildInfo = ProgramBuildInfo CLuint
 newtype BuildStatus = BuildStatus CLint
     deriving (Eq)
 newtype DeviceInfo = DeviceInfo CLuint
+    deriving (Eq)
 newtype DeviceFPConfig = DeviceFPConfig CLbitfield
+    deriving (Storable)
 newtype CommandType = CommandType CLuint
 newtype DeviceExecCapabilities = DeviceExecCapabilities CLbitfield
+    deriving (Storable)
 newtype DeviceMemCacheType = DeviceMemCacheType CLuint
+    deriving (Storable)
 newtype DeviceLocalMemType = DeviceLocalMemType CLuint
+    deriving (Storable)
 
 data CLKernelInfoRetval = KernelInfoRetvalString String | KernelInfoRetvalCLuint CLuint | KernelInfoRetvalContext Context | KernelInfoRetvalProgram Program
 data CLKernelWorkGroupInfoRetval = KernelWorkGroupInfoRetvalCLsizei CLsizei | KernelWorkGroupInfoRetvalCLsizeiList [CLsizei] | KernelWorkGroupInfoRetvalCLulong CLulong
@@ -78,7 +86,7 @@ data CLEventInfoRetval = EventInfoRetvalCommandQueue CommandQueue | EventInfoRet
 data CLEventProfilingInfoRetval = EventProfilingInfoRetvalCLulong CLulong
 data CLContextInfoRetval = EventContextInfoRetvalCLuint CLuint | EventContextInfoRetvalDeviceIDList [DeviceID] | EventContextInfoRetvalContextPropertiesList [ContextProperties] | EventContextInfoRetvalCLbool CLbool
 data CLCommandQueueInfoRetval = CommandQueueInfoRetvalContext Context | CommandQueueInfoRetvalDeviceID DeviceID | CommandQueueInfoRetvalCLuint CLuint | CommandQueueInfoRetvalCommandQueueProperties CommandQueueProperties
-data CLDeviceInfoRetval = DeviceInfoRetvalString String | DeviceInfoRetvalCLuint CLuint | DeviceInfoRetvalCLbool CLbool | DeviceInfoRetvalDeviceFPConfig DeviceFPConfig | DeviceInfoRetvalDeviceExecCapabilities DeviceExecCapabilities | DeviceInfoRetvalCLulong CLulong | DeviceInfoRetvalDeviceMemCacheType DeviceMemCacheType | DeviceInfoRetvalCLsizei CLsizei | DeviceInfoRetvalDeviceLocalMemType DeviceLocalMemType | DeviceInfoRetvalCLsizeiList CLsizei | DeviceInfoRetvalPlatformID PlatformID | DeviceInfoRetvalCommandQueueProperties CommandQueueProperties | DeviceInfoRetvalDeviceType DeviceType
+data CLDeviceInfoRetval = DeviceInfoRetvalString String | DeviceInfoRetvalCLuint CLuint | DeviceInfoRetvalCLbool CLbool | DeviceInfoRetvalDeviceFPConfig DeviceFPConfig | DeviceInfoRetvalDeviceExecCapabilities DeviceExecCapabilities | DeviceInfoRetvalCLulong CLulong | DeviceInfoRetvalDeviceMemCacheType DeviceMemCacheType | DeviceInfoRetvalCLsizei CLsizei | DeviceInfoRetvalDeviceLocalMemType DeviceLocalMemType | DeviceInfoRetvalCLsizeiList [CLsizei] | DeviceInfoRetvalPlatformID PlatformID | DeviceInfoRetvalCommandQueueProperties CommandQueueProperties | DeviceInfoRetvalDeviceType DeviceType
 data CLProgramInfoRetval = ProgramInfoRetvalCLUint CLuint | ProgramInfoRetvalContext Context | ProgramInfoRetvalDeviceIDList [DeviceID] | ProgramInfoRetvalString String | ProgramInfoRetvalPtrList [Ptr ()] | ProgramInfoRetvalCLsizeiList [CLsizei]
     deriving(Eq)
 data CLProgramBuildInfoRetval = ProgramBuildInfoRetvalBuildStatus BuildStatus | ProgramBuildInfoRetvalString String
@@ -203,14 +211,14 @@ clDeviceGlobalMemCacheSize = DeviceInfo 0x101E
 clDeviceGlobalMemSize :: DeviceInfo 
 clDeviceGlobalMemSize = DeviceInfo 0x101F
 
-clDeviceMaxConstantBuffersize :: DeviceInfo 
-clDeviceMaxConstantBuffersize = DeviceInfo 0x1020
+clDeviceMaxConstantBufferSize :: DeviceInfo 
+clDeviceMaxConstantBufferSize = DeviceInfo 0x1020
 
 clDeviceMaxConstantArgs :: DeviceInfo 
 clDeviceMaxConstantArgs = DeviceInfo 0x1021
 
-clDeviceMLocalMemType :: DeviceInfo 
-clDeviceMLocalMemType = DeviceInfo 0x1022
+clDeviceLocalMemType :: DeviceInfo 
+clDeviceLocalMemType = DeviceInfo 0x1022
 
 clDeviceLocalMemSize :: DeviceInfo 
 clDeviceLocalMemSize = DeviceInfo 0x1023
@@ -257,6 +265,11 @@ clDeviceExtensions = DeviceInfo 0x1030
 clDevicePlatform :: DeviceInfo 
 clDevicePlatform = DeviceInfo 0x1031
 
+clDeviceDoubleFPConfig :: DeviceInfo
+clDeviceDoubleFPConfig = DeviceInfo 0x1032
+
+clDeviceHalfFPConfig :: DeviceInfo
+clDeviceHalfFPConfig = DeviceInfo 0x1033
 
 
 clFPDenorm :: DeviceFPConfig 
