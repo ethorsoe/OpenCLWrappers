@@ -31,6 +31,16 @@ wrapGetInfo raw_infoFn = alloca $ \value_size_ret ->
                       maybe (return (Right (param_data,retsize))) (return.Left))
                   (return.Left)
 
+wrapGetNumElements :: Storable a => (CLuint -> Ptr a -> Ptr CLuint -> IO CLint) -> IO (Either ErrorCode [a])
+wrapGetNumElements raw_Fn = alloca (\value_size_ret ->
+    wrapError (raw_Fn 0 nullPtr value_size_ret) >>=
+        maybe (do
+            retsize <- peek value_size_ret
+            allocaArray (fromIntegral retsize)
+                (\param_dataP -> wrapError (raw_Fn retsize param_dataP nullPtr) >>=
+                    maybe (fmap Right $ peekArray (fromIntegral retsize) param_dataP) (return.Left)))
+            (return.Left))
+
 withArrayNull0 a as = withArrayNull $ as ++ [a]
 
 withArrayNull :: Storable a => [a] -> (Ptr a -> IO b) -> IO b

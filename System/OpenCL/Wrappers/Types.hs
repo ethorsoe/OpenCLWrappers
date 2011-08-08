@@ -83,6 +83,7 @@ data CLProgramInfoRetval = ProgramInfoRetvalCLUint CLuint | ProgramInfoRetvalCon
     deriving(Eq)
 data CLProgramBuildInfoRetval = ProgramBuildInfoRetvalBuildStatus BuildStatus | ProgramBuildInfoRetvalString String
     deriving(Eq)
+data CLPlatformInfoRetval = PlatformInfoRetvalString String
 
 type ContextCallback = (CString -> Ptr () -> CLsizei -> Ptr () -> IO ())
 type NativeKernelCallback = Ptr () -> IO ()
