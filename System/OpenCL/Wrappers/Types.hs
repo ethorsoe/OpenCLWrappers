@@ -50,7 +50,9 @@ newtype CommandQueueInfo = CommandQueueInfo CLuint
     deriving (Eq)
 newtype ErrorCode = ErrorCode CLint deriving (Eq,Ord,Show,Read)
 newtype EventInfo = EventInfo CLuint
+    deriving (Eq)
 newtype ProfilingInfo = ProfilingInfo CLuint
+    deriving (Eq)
 newtype KernelInfo = KernelInfo CLuint
 newtype KernelWorkGroupInfo = KernelWorkGroupInfo CLuint
 newtype MapFlags = MapFlags CLbitfield
@@ -73,6 +75,7 @@ newtype DeviceInfo = DeviceInfo CLuint
 newtype DeviceFPConfig = DeviceFPConfig CLbitfield
     deriving (Storable)
 newtype CommandType = CommandType CLuint
+    deriving (Storable)
 newtype DeviceExecCapabilities = DeviceExecCapabilities CLbitfield
     deriving (Storable)
 newtype DeviceMemCacheType = DeviceMemCacheType CLuint
