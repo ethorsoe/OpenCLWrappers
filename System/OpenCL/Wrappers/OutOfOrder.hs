@@ -1,4 +1,3 @@
-{-| Conforms to section 5.8 of the OpenCL 1.0 specification -}
 module System.OpenCL.Wrappers.OutOfOrder
     (clEnqueueMarker
     ,clEnqueueWaitForEvents
@@ -6,25 +5,19 @@ module System.OpenCL.Wrappers.OutOfOrder
 where 
 
 import System.OpenCL.Wrappers.Types
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
-import Foreign
-import Control.Applicative
-import Data.Maybe
+import Foreign(withArray,peek,alloca)
 
 clEnqueueMarker :: CommandQueue -> IO (Either ErrorCode Event)
-clEnqueueMarker queue = alloca $ \eventP -> do
-    err <- wrapError $ raw_clEnqueueMarker queue eventP
-    if err == Nothing 
-        then Right <$> peek eventP
-        else return $ Left . fromJust $  err
+clEnqueueMarker queue = alloca (\eventP ->
+    wrapError (raw_clEnqueueMarker queue eventP) >>=
+        maybe (fmap Right $ peek eventP) (return.Left))
     
 clEnqueueWaitForEvents :: CommandQueue -> [Event] -> IO (Maybe ErrorCode)
-clEnqueueWaitForEvents queue events = 
-    allocaArray num_events $ \eventsP -> do
-        pokeArray eventsP events
-        wrapError $ raw_clEnqueueWaitForEvents queue (fromIntegral num_events) eventsP 
+clEnqueueWaitForEvents queue events =
+    withArray events (\eventsP ->
+        wrapError $ raw_clEnqueueWaitForEvents queue (fromIntegral num_events) eventsP)
     where num_events = length events
 
 clEnqueueBarrier :: CommandQueue -> IO (Maybe ErrorCode) 
