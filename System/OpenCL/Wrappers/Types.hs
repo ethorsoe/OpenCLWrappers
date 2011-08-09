@@ -43,6 +43,7 @@ newtype ChannelType = ChannelType CLuint
 newtype DeviceType = DeviceType CLbitfield
     deriving (Storable)
 newtype ContextInfo = ContextInfo CLuint
+    deriving (Eq)
 newtype CommandQueueProperties = CommandQueueProperties CLbitfield
     deriving (Storable)
 newtype CommandQueueInfo = CommandQueueInfo CLuint
@@ -85,7 +86,7 @@ data CLImageInfoRetval = ImageInfoRetvalCLsizei CLsizei | ImageInfoRetvalImageFo
 data CLMemObjectInfoRetval = MemObjectInfoRetvalMemObjectType MemObjectType | MemObjectInfoRetvalMemFlags MemFlags | MemObjectInfoRetvalCLsizei CLsizei | MemObjectInfoRetvalPtr (Ptr ()) | MemObjectInfoRetvalCLuint CLuint | MemObjectInfoRetvalContext Context | MemObjectInfoRetvalMem Mem
 data CLEventInfoRetval = EventInfoRetvalCommandQueue CommandQueue | EventInfoRetvalContext Context| EventInfoRetvalCommandType CommandType | EventInfoRetvalCLint CLint | EventInfoRetvalCLuint CLuint
 data CLEventProfilingInfoRetval = EventProfilingInfoRetvalCLulong CLulong
-data CLContextInfoRetval = EventContextInfoRetvalCLuint CLuint | EventContextInfoRetvalDeviceIDList [DeviceID] | EventContextInfoRetvalContextPropertiesList [ContextProperties] | EventContextInfoRetvalCLbool CLbool
+data CLContextInfoRetval = ContextInfoRetvalCLuint CLuint | ContextInfoRetvalDeviceIDList [DeviceID] | ContextInfoRetvalContextPropertiesList [ContextProperties]
 data CLCommandQueueInfoRetval = CommandQueueInfoRetvalContext Context | CommandQueueInfoRetvalDeviceID DeviceID | CommandQueueInfoRetvalCLuint CLuint | CommandQueueInfoRetvalCommandQueueProperties CommandQueueProperties
 data CLDeviceInfoRetval = DeviceInfoRetvalString String | DeviceInfoRetvalCLuint CLuint | DeviceInfoRetvalCLbool CLbool | DeviceInfoRetvalDeviceFPConfig DeviceFPConfig | DeviceInfoRetvalDeviceExecCapabilities DeviceExecCapabilities | DeviceInfoRetvalCLulong CLulong | DeviceInfoRetvalDeviceMemCacheType DeviceMemCacheType | DeviceInfoRetvalCLsizei CLsizei | DeviceInfoRetvalDeviceLocalMemType DeviceLocalMemType | DeviceInfoRetvalCLsizeiList [CLsizei] | DeviceInfoRetvalPlatformID PlatformID | DeviceInfoRetvalCommandQueueProperties CommandQueueProperties | DeviceInfoRetvalDeviceType DeviceType
 data CLProgramInfoRetval = ProgramInfoRetvalCLUint CLuint | ProgramInfoRetvalContext Context | ProgramInfoRetvalDeviceIDList [DeviceID] | ProgramInfoRetvalString String | ProgramInfoRetvalPtrList [Ptr ()] | ProgramInfoRetvalCLsizeiList [CLsizei]
