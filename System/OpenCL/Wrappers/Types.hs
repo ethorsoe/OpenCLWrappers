@@ -46,6 +46,7 @@ newtype ContextInfo = ContextInfo CLuint
 newtype CommandQueueProperties = CommandQueueProperties CLbitfield
     deriving (Storable)
 newtype CommandQueueInfo = CommandQueueInfo CLuint
+    deriving (Eq)
 newtype ErrorCode = ErrorCode CLint deriving (Eq,Ord,Show,Read)
 newtype EventInfo = EventInfo CLuint
 newtype ProfilingInfo = ProfilingInfo CLuint
