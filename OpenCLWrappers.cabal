@@ -39,6 +39,7 @@ Library
                    System.OpenCL.Wrappers.ProgramObject
                    System.OpenCL.Wrappers.Sampler
                    System.OpenCL.Wrappers.Types
+                   System.OpenCL.Wrappers.Helpers
                    System.OpenCL.Wrappers.Raw
                    System.OpenCL.Wrappers
   build-depends: base <= 4.4,
