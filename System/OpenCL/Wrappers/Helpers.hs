@@ -6,7 +6,10 @@ module System.OpenCL.Wrappers.Helpers
     ,buildProgram)
 where
 
-import System.OpenCL.Wrappers
+import System.OpenCL.Wrappers.Kernel
+import System.OpenCL.Wrappers.Types
+import System.OpenCL.Wrappers.ProgramObject
+import System.OpenCL.Wrappers.FlushFinish
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Ptr

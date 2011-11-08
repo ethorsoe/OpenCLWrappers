@@ -40,7 +40,7 @@
       
     * Enumerations and constants are replaced by newtypes for the sake of type-safety.
 -}
-module System.OpenCL.Wrappers 
+module System.OpenCL.Wrappers
     (module System.OpenCL.Wrappers.CommandQueue
     ,module System.OpenCL.Wrappers.Context
     ,module System.OpenCL.Wrappers.DeviceInfo
@@ -54,8 +54,9 @@ module System.OpenCL.Wrappers
     ,module System.OpenCL.Wrappers.PlatformInfo
     ,module System.OpenCL.Wrappers.ProgramObject
     ,module System.OpenCL.Wrappers.Sampler
-    ,module System.OpenCL.Wrappers.Types    
-    ,module System.OpenCL.Wrappers.Raw)    
+    ,module System.OpenCL.Wrappers.Types
+    ,module System.OpenCL.Wrappers.Helpers
+    ,module System.OpenCL.Wrappers.Raw) 
 where
 
 import System.OpenCL.Wrappers.CommandQueue
@@ -72,4 +73,5 @@ import System.OpenCL.Wrappers.PlatformInfo
 import System.OpenCL.Wrappers.ProgramObject
 import System.OpenCL.Wrappers.Sampler
 import System.OpenCL.Wrappers.Types
+import System.OpenCL.Wrappers.Helpers
 import System.OpenCL.Wrappers.Raw
