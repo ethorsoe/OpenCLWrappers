@@ -1,5 +1,5 @@
 name: OpenCLWrappers
-version: 0.0.0
+version: 0.0.0.1
 cabal-version: >=1.2
 build-type: Simple
 license: BSD3
@@ -33,7 +33,7 @@ Library
                    System.OpenCL.Wrappers.Helpers
                    System.OpenCL.Wrappers.Raw
                    System.OpenCL.Wrappers
-  build-depends: base <= 4.4,
+  build-depends: base < 4.5,
                  bytestring -any,
                  mtl >= 2 && < 2.1
   exposed: True
