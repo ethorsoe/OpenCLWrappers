@@ -1,0 +1,8 @@
+You must link explicitly to opencl library, name of which varies.
+
+eg.
+	ghc -lamdocl64 --make opencl.hs
+	ghc -lOpenCL --make opencl.hs
+
+Some examples can be found in http://users.tkk.fi/~jkarlson/codes/OpenCLWrappers/examples
+
