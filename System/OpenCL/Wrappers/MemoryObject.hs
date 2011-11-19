@@ -115,7 +115,6 @@ clEnqueueCopyBuffer src_buffer dst_buffer src_offset dst_offset cb =
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> 
                 raw_clEnqueueCopyBuffer command_queue src_buffer dst_buffer src_offset dst_offset cb num_events_in_wait_list event_wait_list event)                       
 
-type ImageDims = (CLsizei,CLsizei,CLsizei)
 clEnqueueReadImage image blocking_read (oa,ob,oc) (ra,rb,rc) row_pitch slice_pitch ptr = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> allocaArray 3 $ \origin -> allocaArray 3 $ \region -> do 
                 pokeArray region [ra,rb,rc]

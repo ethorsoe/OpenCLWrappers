@@ -37,6 +37,7 @@ type CLbitfield = CLulong
 type ImageFormatp = Ptr ImageFormat
 
 type ImageFormat = (ChannelOrder,ChannelType)
+type ImageDims = (CLsizei,CLsizei,CLsizei)
 
 newtype ChannelOrder = ChannelOrder CLuint
     deriving (Eq)
