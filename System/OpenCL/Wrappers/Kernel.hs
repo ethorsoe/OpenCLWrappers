@@ -44,11 +44,23 @@ clSetKernelArg :: Kernel -> CLuint -> CLsizei -> Ptr () -> IO (Maybe ErrorCode)
 clSetKernelArg kernel arg_index arg_size arg_value = 
     wrapError $ raw_clSetKernelArg kernel arg_index arg_size arg_value
 
-clGetKernelInfo :: Kernel -> KernelInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetKernelInfo kernel (KernelInfo param_name) = wrapGetInfo (raw_clGetKernelInfo kernel param_name)
+clGetKernelInfo :: Kernel -> KernelInfo -> IO (Either ErrorCode CLKernelInfoRetval)
+clGetKernelInfo kernel (KernelInfo param_name) = (wrapGetInfo $ raw_clGetKernelInfo kernel param_name) >>= 
+    either (return.Left) (\(x,size) -> fmap Right $ let c = (KernelInfo param_name) in case () of 
+        ()
+            | c == clKernelFunctionName   -> peekStringInfo KernelInfoRetvalString x
+            | c == clKernelNumArgs        -> peekOneInfo KernelInfoRetvalCLuint x
+            | c == clKernelReferenceCount -> peekOneInfo KernelInfoRetvalCLuint x
+            | c == clKernelContext        -> peekOneInfo KernelInfoRetvalContext x
+            | c == clKernelProgram        -> peekOneInfo KernelInfoRetvalProgram x)
 
-clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> KernelWorkGroupInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetKernelWorkGroupInfo kernel device (KernelWorkGroupInfo param_name) = wrapGetInfo (raw_clGetKernelWorkGroupInfo kernel device param_name)
+clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> KernelWorkGroupInfo -> IO (Either ErrorCode CLKernelWorkGroupInfoRetval)
+clGetKernelWorkGroupInfo kernel device (KernelWorkGroupInfo param_name) = (wrapGetInfo $ raw_clGetKernelWorkGroupInfo kernel device param_name) >>=
+    either (return.Left) (\(x,size) -> fmap Right $ let c = (KernelWorkGroupInfo param_name) in case () of 
+        ()
+            | c == clKernelWorkGroupSize        -> peekOneInfo KernelWorkGroupInfoRetvalCLsizei x
+            | c == clKernelCompileWorkGroupSize -> peekManyInfo KernelWorkGroupInfoRetvalCLsizeiList x size
+            | c == clKernelLocalMemSize         -> peekOneInfo KernelWorkGroupInfoRetvalCLulong x)
 
 clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> [CLsizei] -> [CLsizei] -> [Event] -> IO (Either ErrorCode Event) 
 clEnqueueNDRangeKernel queue kernel global_work_sizeL local_work_sizeL event_wait_listL = 

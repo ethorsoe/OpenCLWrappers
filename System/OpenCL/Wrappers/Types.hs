@@ -39,13 +39,15 @@ type ImageFormatp = Ptr ImageFormat
 type ImageFormat = (ChannelOrder,ChannelType)
 
 newtype ChannelOrder = ChannelOrder CLuint
+    deriving (Eq)
 newtype ChannelType = ChannelType CLuint
+    deriving (Eq)
 newtype DeviceType = DeviceType CLbitfield
-    deriving (Storable)
+    deriving (Eq,Storable)
 newtype ContextInfo = ContextInfo CLuint
     deriving (Eq)
 newtype CommandQueueProperties = CommandQueueProperties CLbitfield
-    deriving (Storable)
+    deriving (Eq,Storable)
 newtype CommandQueueInfo = CommandQueueInfo CLuint
     deriving (Eq)
 newtype ErrorCode = ErrorCode CLint deriving (Eq,Ord,Show,Read)
@@ -54,16 +56,24 @@ newtype EventInfo = EventInfo CLuint
 newtype ProfilingInfo = ProfilingInfo CLuint
     deriving (Eq)
 newtype KernelInfo = KernelInfo CLuint
+    deriving (Eq)
 newtype KernelWorkGroupInfo = KernelWorkGroupInfo CLuint
+    deriving (Eq)
 newtype MapFlags = MapFlags CLbitfield
 newtype MemFlags = MemFlags CLbitfield
+    deriving (Eq,Storable)
 newtype MemObjectType = MemObjectType CLuint
+    deriving (Eq,Storable)
 newtype MemInfo = MemInfo CLuint
-newtype ImageInfo = ImageInfo CLuint
+    deriving (Eq)
 newtype PlatformInfo = PlatformInfo CLuint
+    deriving (Eq)
 newtype SamplerInfo = SamplerInfo CLuint
+    deriving (Eq)
 newtype AddressingMode = AddressingMode CLuint
+    deriving (Eq,Storable)
 newtype FilterMode = FilterMode CLuint
+    deriving (Eq,Storable)
 newtype ProgramInfo = ProgramInfo CLuint
     deriving (Eq)
 newtype ProgramBuildInfo = ProgramBuildInfo CLuint
@@ -73,30 +83,42 @@ newtype BuildStatus = BuildStatus CLint
 newtype DeviceInfo = DeviceInfo CLuint
     deriving (Eq)
 newtype DeviceFPConfig = DeviceFPConfig CLbitfield
-    deriving (Storable)
+    deriving (Eq,Storable)
 newtype CommandType = CommandType CLuint
-    deriving (Storable)
+    deriving (Eq,Storable)
 newtype DeviceExecCapabilities = DeviceExecCapabilities CLbitfield
-    deriving (Storable)
+    deriving (Eq,Storable)
 newtype DeviceMemCacheType = DeviceMemCacheType CLuint
-    deriving (Storable)
+    deriving (Eq,Storable)
 newtype DeviceLocalMemType = DeviceLocalMemType CLuint
-    deriving (Storable)
+    deriving (Eq,Storable)
 
 data CLKernelInfoRetval = KernelInfoRetvalString String | KernelInfoRetvalCLuint CLuint | KernelInfoRetvalContext Context | KernelInfoRetvalProgram Program
+    deriving(Eq)
 data CLKernelWorkGroupInfoRetval = KernelWorkGroupInfoRetvalCLsizei CLsizei | KernelWorkGroupInfoRetvalCLsizeiList [CLsizei] | KernelWorkGroupInfoRetvalCLulong CLulong
+    deriving(Eq)
 data CLImageInfoRetval = ImageInfoRetvalCLsizei CLsizei | ImageInfoRetvalImageFormat ImageFormat | ImageInfoRetvalPtr (Ptr ())
+    deriving(Eq)
 data CLMemObjectInfoRetval = MemObjectInfoRetvalMemObjectType MemObjectType | MemObjectInfoRetvalMemFlags MemFlags | MemObjectInfoRetvalCLsizei CLsizei | MemObjectInfoRetvalPtr (Ptr ()) | MemObjectInfoRetvalCLuint CLuint | MemObjectInfoRetvalContext Context | MemObjectInfoRetvalMem Mem
+    deriving(Eq)
 data CLEventInfoRetval = EventInfoRetvalCommandQueue CommandQueue | EventInfoRetvalContext Context| EventInfoRetvalCommandType CommandType | EventInfoRetvalCLint CLint | EventInfoRetvalCLuint CLuint
+    deriving(Eq)
 data CLEventProfilingInfoRetval = EventProfilingInfoRetvalCLulong CLulong
+    deriving(Eq)
 data CLContextInfoRetval = ContextInfoRetvalCLuint CLuint | ContextInfoRetvalDeviceIDList [DeviceID] | ContextInfoRetvalContextPropertiesList [ContextProperties]
+    deriving(Eq)
 data CLCommandQueueInfoRetval = CommandQueueInfoRetvalContext Context | CommandQueueInfoRetvalDeviceID DeviceID | CommandQueueInfoRetvalCLuint CLuint | CommandQueueInfoRetvalCommandQueueProperties CommandQueueProperties
+    deriving(Eq)
 data CLDeviceInfoRetval = DeviceInfoRetvalString String | DeviceInfoRetvalCLuint CLuint | DeviceInfoRetvalCLbool CLbool | DeviceInfoRetvalDeviceFPConfig DeviceFPConfig | DeviceInfoRetvalDeviceExecCapabilities DeviceExecCapabilities | DeviceInfoRetvalCLulong CLulong | DeviceInfoRetvalDeviceMemCacheType DeviceMemCacheType | DeviceInfoRetvalCLsizei CLsizei | DeviceInfoRetvalDeviceLocalMemType DeviceLocalMemType | DeviceInfoRetvalCLsizeiList [CLsizei] | DeviceInfoRetvalPlatformID PlatformID | DeviceInfoRetvalCommandQueueProperties CommandQueueProperties | DeviceInfoRetvalDeviceType DeviceType
+    deriving(Eq)
 data CLProgramInfoRetval = ProgramInfoRetvalCLUint CLuint | ProgramInfoRetvalContext Context | ProgramInfoRetvalDeviceIDList [DeviceID] | ProgramInfoRetvalString String | ProgramInfoRetvalPtrList [Ptr ()] | ProgramInfoRetvalCLsizeiList [CLsizei]
     deriving(Eq)
 data CLProgramBuildInfoRetval = ProgramBuildInfoRetvalBuildStatus BuildStatus | ProgramBuildInfoRetvalString String
     deriving(Eq)
 data CLPlatformInfoRetval = PlatformInfoRetvalString String
+    deriving(Eq)
+data CLSamplerInfoRetval = SamplerInfoRetvalCLuint CLuint | SamplerInfoRetvalContext Context | SamplerInfoRetvalAddressingMode AddressingMode | SamplerInfoRetvalFilterMode FilterMode | SamplerInfoRetvalCLbool CLbool
+    deriving(Eq)
 
 type ContextCallback = (CString -> Ptr () -> CLsizei -> Ptr () -> IO ())
 type NativeKernelCallback = Ptr () -> IO ()
@@ -359,8 +381,8 @@ clContextPlatform = 0x1084
 clKernelFunctionName  :: KernelInfo 
 clKernelFunctionName  = KernelInfo 0x1190
 
-clKernelNumFlags :: KernelInfo 
-clKernelNumFlags = KernelInfo 0x1191
+clKernelNumArgs :: KernelInfo 
+clKernelNumArgs = KernelInfo 0x1191
 
 clKernelReferenceCount :: KernelInfo 
 clKernelReferenceCount = KernelInfo 0x1192
@@ -511,26 +533,26 @@ clMemContext :: MemInfo
 clMemContext = MemInfo 0x1106
 
 
-clImageFormat :: ImageInfo 
-clImageFormat = ImageInfo 0x1110
+clImageFormat :: MemInfo 
+clImageFormat = MemInfo 0x1110
 
-clImageElementSize :: ImageInfo 
-clImageElementSize = ImageInfo 0x1111
+clImageElementSize :: MemInfo 
+clImageElementSize = MemInfo 0x1111
 
-clImageRowPitch :: ImageInfo 
-clImageRowPitch = ImageInfo 0x1112
+clImageRowPitch :: MemInfo 
+clImageRowPitch = MemInfo 0x1112
 
-clImageSlicePitch :: ImageInfo 
-clImageSlicePitch = ImageInfo 0x1113
+clImageSlicePitch :: MemInfo 
+clImageSlicePitch = MemInfo 0x1113
 
-clImageWidth :: ImageInfo 
-clImageWidth = ImageInfo 0x1114
+clImageWidth :: MemInfo 
+clImageWidth = MemInfo 0x1114
 
-clImageHeight :: ImageInfo 
-clImageHeight = ImageInfo 0x1115
+clImageHeight :: MemInfo 
+clImageHeight = MemInfo 0x1115
 
-clImageDepth :: ImageInfo 
-clImageDepth = ImageInfo 0x1116
+clImageDepth :: MemInfo 
+clImageDepth = MemInfo 0x1116
 
 
 clMapRead :: MapFlags 

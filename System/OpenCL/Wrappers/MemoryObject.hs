@@ -61,11 +61,28 @@ clGetSupportedImageFormats ctx (MemFlags flags) (MemObjectType image_type) = all
           (return . Left) 
           err
 
-clGetMemObjectInfo :: Mem -> MemInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetMemObjectInfo mem (MemInfo param_name) = wrapGetInfo (raw_clGetMemObjectInfo mem param_name)
+clGetMemObjectInfo :: Mem -> MemInfo -> IO (Either ErrorCode CLMemObjectInfoRetval)
+clGetMemObjectInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetMemObjectInfo mem param_name) >>=
+    either (return.Left) (\(x,size) -> fmap Right $ let c = (MemInfo param_name) in case () of 
+        ()
+            | c == clMemType           -> peekOneInfo MemObjectInfoRetvalMemObjectType x
+            | c == clMemFlags          -> peekOneInfo MemObjectInfoRetvalMemFlags x
+            | c == clMemSize           -> peekOneInfo MemObjectInfoRetvalCLsizei x
+            | c == clMemHostPtr        -> peekOneInfo MemObjectInfoRetvalPtr x
+            | c == clMemMapCount       -> peekOneInfo MemObjectInfoRetvalCLuint x
+            | c == clMemReferenceCount -> peekOneInfo MemObjectInfoRetvalCLuint x
+            | c == clMemContext        -> peekOneInfo MemObjectInfoRetvalContext x)
 
-clGetImageInfo :: Mem -> MemInfo -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-clGetImageInfo mem (MemInfo param_name) = wrapGetInfo (raw_clGetImageInfo mem param_name)
+clGetImageInfo :: Mem -> MemInfo -> IO (Either ErrorCode CLImageInfoRetval)
+clGetImageInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetImageInfo mem param_name) >>=
+    either (return.Left) (\(x,size) -> fmap Right $ let c = (MemInfo param_name) in case () of 
+        ()
+            | c == clImageElementSize -> peekOneInfo ImageInfoRetvalCLsizei x
+            | c == clImageRowPitch    -> peekOneInfo ImageInfoRetvalCLsizei x
+            | c == clImageSlicePitch  -> peekOneInfo ImageInfoRetvalCLsizei x
+            | c == clImageWidth       -> peekOneInfo ImageInfoRetvalCLsizei x
+            | c == clImageHeight      -> peekOneInfo ImageInfoRetvalCLsizei x
+            | c == clImageDepth       -> peekOneInfo ImageInfoRetvalCLsizei x)
         
 enqueue :: (CommandQueue -> CLuint -> Ptr Event -> Ptr Event -> IO CLint) -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)      
 enqueue fn queue events = alloca $ \event -> withArrayNull events $ \event_wait_list -> do
