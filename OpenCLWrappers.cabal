@@ -5,11 +5,11 @@ build-type: Simple
 license: BSD3
 license-file: LICENSE
 copyright: Renaissance Computing Institute, Emil Karlson
-maintainer: Emil Karlson
+maintainer: Emil Karlson <jekarlson@gmail.com>
 stability: Experimental
 homepage: https://github.com/jkarlson/OpenCLWrappers
 package-url:
-bug-reports: jekarlson@gmail.com
+bug-reports: https://github.com/jkarlson/OpenCLWrappers/issues
 synopsis: The OpenCL Standard for heterogenous data-parallel computing
 description: Light opencl wrappers, a fork of the OpenCLRaw package.
 category: FFI
