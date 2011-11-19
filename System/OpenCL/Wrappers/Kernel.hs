@@ -1,4 +1,3 @@
-{-| Conforms to section 5.5 of the OpenCL 1.0 specification -}
 module System.OpenCL.Wrappers.Kernel 
     (clCreateKernel
     ,clCreateKernelsInProgram

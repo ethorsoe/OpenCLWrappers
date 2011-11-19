@@ -1,5 +1,5 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-| Declaration of types, bounds and constants for OpenCL 1.0 -}
+{-| Declaration of types, bounds and constants -}
 module System.OpenCL.Wrappers.Types where
 
 import Foreign.C.Types

@@ -1,4 +1,3 @@
-{-| Conforms to section 5.2 of the OpenCL 1.0 specification -}
 module System.OpenCL.Wrappers.MemoryObject 
     (clCreateBuffer
     ,clCreateImage2D
@@ -225,5 +224,4 @@ clEnqueueMapImage buffer blocking_map (MapFlags map_flags) (oa,ob,oc) (ra,rb,rc)
 clEnqueueUnmapMemObject mem mapped_ptr = enqueue
     (\command_queue num_events_in_wait_list event_wait_list event -> 
         raw_clEnqueueUnmapMemObject command_queue mem mapped_ptr num_events_in_wait_list event_wait_list event)
-
 

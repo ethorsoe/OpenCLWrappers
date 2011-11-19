@@ -1,9 +1,10 @@
 {-# LANGUAGE ExistentialQuantification #-}
-{-| Conforms to section 5.5 of the OpenCL 1.0 specification -}
+{-| Some helper functions that may or may not be useful to anyone. -}
 module System.OpenCL.Wrappers.Helpers
     (createSyncKernel
     ,createAsyncKernelWithParams
-    ,buildProgram)
+    ,buildProgram
+    ,pushKernelParams)
 where
 
 import System.OpenCL.Wrappers.Kernel
@@ -14,11 +15,11 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Ptr
 
-pushParams :: forall b. Storable b => Kernel -> CLuint -> [b] -> IO (Maybe ErrorCode)
-pushParams kernel argNum (x:xs) = 
+pushKernelParams :: forall b. Storable b => Kernel -> CLuint -> [b] -> IO (Maybe ErrorCode)
+pushKernelParams kernel argNum (x:xs) = 
     withArray [x] (\y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)) >>=
-        maybe (pushParams kernel (argNum + 1) xs) (return.Just)
-pushParams _ _ _ = return Nothing
+        maybe (pushKernelParams kernel (argNum + 1) xs) (return.Just)
+pushKernelParams _ _ _ = return Nothing
 
 syncKernelFun :: forall b. Storable b => CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [b] -> IO (Maybe ErrorCode)
 syncKernelFun _ kernel queue a b [] =
@@ -36,7 +37,7 @@ createSyncKernel program queue initFun globalWorkRange localWorkRange =
 createAsyncKernelWithParams :: forall b. Storable b => Program -> CommandQueue -> String -> [Int] -> [Int] -> [b] -> IO (Either ErrorCode ([Event] -> IO (Either ErrorCode Event)))
 createAsyncKernelWithParams program queue initFun globalWorkRange localWorkRange params =
         clCreateKernel program initFun >>=
-            either (return.Left) (\k -> pushParams k 0 params >>=
+            either (return.Left) (\k -> pushKernelParams k 0 params >>=
                 maybe (return.Right $ clEnqueueNDRangeKernel queue k (map fromIntegral globalWorkRange) (map fromIntegral localWorkRange)) (return.Left)) 
 
 buildProgram :: String -> String -> Context -> DeviceID -> IO (Either (ErrorCode, String) Program)
