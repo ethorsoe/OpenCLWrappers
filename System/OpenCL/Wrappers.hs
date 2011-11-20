@@ -36,7 +36,7 @@
     * Side-effectful procedures capable of returning an error code only return a Maybe ErrorCode, with Nothing returned upon success
     
     * Procedures which follow the pattern of returning a pointer to an object and taking a final parameter as an error code instead
-      return Either ErrorCode @ObjectType@ 
+      return @ObjectType@, and throw a Haskell exception when an error occurs.
       
     * Enumerations and constants are replaced by newtypes for the sake of type-safety.
 -}

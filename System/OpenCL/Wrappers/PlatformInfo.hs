@@ -9,9 +9,10 @@ import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
 
 
-clGetPlatformIDs :: IO (Either ErrorCode [PlatformID])
+clGetPlatformIDs :: IO [PlatformID]
 clGetPlatformIDs = wrapGetNumElements raw_clGetPlatformIDs
 
-clGetPlatformInfo :: PlatformID -> PlatformInfo -> IO (Either ErrorCode CLPlatformInfoRetval)
-clGetPlatformInfo mem (PlatformInfo param_name) = wrapGetInfo (raw_clGetPlatformInfo mem param_name) >>=
-    either (return.Left) (\(x,_) -> fmap Right $ peekStringInfo PlatformInfoRetvalString x)
+clGetPlatformInfo :: PlatformID -> PlatformInfo -> IO CLPlatformInfoRetval
+clGetPlatformInfo mem (PlatformInfo param_name) = do
+    (x,_) <- wrapGetInfo (raw_clGetPlatformInfo mem param_name)
+    peekStringInfo PlatformInfoRetvalString x

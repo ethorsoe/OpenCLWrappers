@@ -1,7 +1,10 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveDataTypeable, GeneralizedNewtypeDeriving, ExistentialQuantification #-}
 {-| Declaration of types, bounds and constants -}
 module System.OpenCL.Wrappers.Types where
 
+import Prelude hiding(catch)
+import Data.Typeable
+import Control.Exception
 import Foreign.C.Types
 import Foreign.C.String(CString)
 import Foreign
@@ -51,7 +54,8 @@ newtype CommandQueueProperties = CommandQueueProperties CLbitfield
     deriving (Eq,Storable)
 newtype CommandQueueInfo = CommandQueueInfo CLuint
     deriving (Eq)
-newtype ErrorCode = ErrorCode CLint deriving (Eq,Ord,Show,Read)
+newtype ErrorCode = ErrorCode CLint
+    deriving (Eq,Ord,Show,Read,Typeable)
 newtype EventInfo = EventInfo CLuint
     deriving (Eq)
 newtype ProfilingInfo = ProfilingInfo CLuint
@@ -93,6 +97,32 @@ newtype DeviceMemCacheType = DeviceMemCacheType CLuint
     deriving (Eq,Storable)
 newtype DeviceLocalMemType = DeviceLocalMemType CLuint
     deriving (Eq,Storable)
+
+data SomeCLException = forall e. (Exception e) => SomeCLException ErrorCode e
+    deriving (Typeable)
+
+instance Show SomeCLException where
+    showsPrec d (SomeCLException _ e) = showsPrec d e
+
+instance Exception SomeCLException
+
+newtype CLError = CLError ErrorCode
+    deriving (Eq,Show,Typeable)
+
+instance Exception CLError where
+    toException e@(CLError err) = toException (SomeCLException err e)
+    fromException e = do
+        SomeCLException err _ <- fromException e
+        return (CLError err)
+
+data CLBuildError = CLBuildError ErrorCode String
+    deriving (Eq,Show,Typeable)
+
+instance Exception CLBuildError where
+    toException e@(CLBuildError err _) = toException (SomeCLException err e)
+    fromException e = do
+        SomeCLException _ e' <- fromException e
+        cast e'
 
 data CLKernelInfoRetval = KernelInfoRetvalString String | KernelInfoRetvalCLuint CLuint | KernelInfoRetvalContext Context | KernelInfoRetvalProgram Program
     deriving(Eq)

@@ -14,28 +14,29 @@ import Foreign.Marshal.Alloc(alloca)
 import Foreign.Storable(peek)
 
 
-clCreateCommandQueue :: Context -> DeviceID -> [CommandQueueProperties] -> IO (Either ErrorCode CommandQueue)
+clCreateCommandQueue :: Context -> DeviceID -> [CommandQueueProperties] -> IO CommandQueue
 clCreateCommandQueue ctx devid props = let
     CommandQueueProperties properties = combineOr props
-        in wrapErrorEither $ raw_clCreateCommandQueue ctx devid properties 
+        in wrapErrorResult $ raw_clCreateCommandQueue ctx devid properties 
 
-clRetainCommandQueue :: CommandQueue -> IO (Maybe ErrorCode)
+clRetainCommandQueue :: CommandQueue -> IO ()
 clRetainCommandQueue queue = wrapError (raw_clRetainCommandQueue queue)
 
-clReleaseCommandQueue :: CommandQueue -> IO (Maybe ErrorCode)
+clReleaseCommandQueue :: CommandQueue -> IO ()
 clReleaseCommandQueue queue = wrapError (raw_clReleaseCommandQueue queue)
 
-clGetCommandQueueInfo :: CommandQueue -> CommandQueueInfo -> IO (Either ErrorCode CLCommandQueueInfoRetval)
-clGetCommandQueueInfo ctx (CommandQueueInfo param_name) = wrapGetInfo (raw_clGetCommandQueueInfo ctx param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (CommandQueueInfo param_name) in case () of 
+clGetCommandQueueInfo :: CommandQueue -> CommandQueueInfo -> IO CLCommandQueueInfoRetval
+clGetCommandQueueInfo ctx c@(CommandQueueInfo param_name) = do
+    (x,size) <- wrapGetInfo (raw_clGetCommandQueueInfo ctx param_name)
+    case () of
         ()
             | c == clQueueContext        -> peekOneInfo CommandQueueInfoRetvalContext x
             | c == clQueueDevice         -> peekOneInfo CommandQueueInfoRetvalDeviceID x
             | c == clQueueReferenceCount -> peekOneInfo CommandQueueInfoRetvalCLuint x
-            | c == clQueueProperties     -> peekOneInfo CommandQueueInfoRetvalCommandQueueProperties x)
+            | c == clQueueProperties     -> peekOneInfo CommandQueueInfoRetvalCommandQueueProperties x
 
 {-# DEPRECATED clSetCommandQueueProperty "Deprecated in C api" #-}
-clSetCommandQueueProperty :: CommandQueue -> CommandQueueProperties -> Bool -> IO (Either ErrorCode CommandQueueProperties)
-clSetCommandQueueProperty queue (CommandQueueProperties properties) enable = alloca $ \old_properties ->
-    wrapError (raw_clSetCommandQueueProperty queue properties (if enable then clTrue else clFalse) old_properties) >>=
-        maybe (fmap (Right . CommandQueueProperties) $ peek old_properties) (return . Left)
+clSetCommandQueueProperty :: CommandQueue -> CommandQueueProperties -> Bool -> IO CommandQueueProperties
+clSetCommandQueueProperty queue (CommandQueueProperties properties) enable = alloca $ \old_properties -> do
+    raw_clSetCommandQueueProperty queue properties (if enable then clTrue else clFalse) old_properties
+    fmap CommandQueueProperties $ peek old_properties

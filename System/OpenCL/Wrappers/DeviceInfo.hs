@@ -9,12 +9,14 @@ import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
 
 
-clGetDeviceIDs :: PlatformID -> DeviceType -> IO (Either ErrorCode [DeviceID])
+clGetDeviceIDs :: PlatformID -> DeviceType -> IO [DeviceID]
 clGetDeviceIDs platform (DeviceType device_type) = wrapGetNumElements $ raw_clGetDeviceIDs platform device_type
       
-clGetDeviceInfo :: DeviceID -> DeviceInfo -> IO (Either ErrorCode CLDeviceInfoRetval)
-clGetDeviceInfo obj (DeviceInfo param_name) = wrapGetInfo (raw_clGetDeviceInfo obj param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (DeviceInfo param_name) in case () of 
+clGetDeviceInfo :: DeviceID -> DeviceInfo -> IO CLDeviceInfoRetval
+clGetDeviceInfo obj (DeviceInfo param_name) = do
+    (x,size) <- wrapGetInfo $ raw_clGetDeviceInfo obj param_name
+    let c= DeviceInfo param_name
+    case () of
         ()
             | c == clDeviceAddressBits                -> peekOneInfo DeviceInfoRetvalCLuint x
             | c == clDeviceAvailable                  -> peekOneInfo DeviceInfoRetvalCLbool x
@@ -67,4 +69,4 @@ clGetDeviceInfo obj (DeviceInfo param_name) = wrapGetInfo (raw_clGetDeviceInfo o
             | c == clDeviceVendor                     -> peekStringInfo DeviceInfoRetvalString x
             | c == clDeviceVendorID                   -> peekOneInfo DeviceInfoRetvalCLuint x
             | c == clDeviceVersion                    -> peekStringInfo DeviceInfoRetvalString x
-            | c == clDriverVersion                    -> peekStringInfo DeviceInfoRetvalString x)
+            | c == clDriverVersion                    -> peekStringInfo DeviceInfoRetvalString x

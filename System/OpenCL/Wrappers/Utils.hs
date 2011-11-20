@@ -1,6 +1,7 @@
 {-| OpenCL utility functions for improving FFI wrapper code. -}
 module System.OpenCL.Wrappers.Utils where
 
+import Prelude hiding(catch)
 import Foreign
 import Foreign.C
 import System.OpenCL.Wrappers.Errors
@@ -8,38 +9,38 @@ import System.OpenCL.Wrappers.Types
 import Control.Applicative
 import Data.Maybe
 import Control.Monad.Cont
+import Control.Exception
 import Data.Bits((.|.))
 import Unsafe.Coerce(unsafeCoerce)
 
-wrapError :: IO CLint -> IO (Maybe ErrorCode)
-wrapError thunk = thunk >>= \errcode -> if ErrorCode errcode == clSuccess then return Nothing else return . Just . ErrorCode $ errcode
+wrapError :: IO CLint -> IO ()
+wrapError action = do
+    err <- ErrorCode <$> action
+    when (err /= clSuccess) $ throwIO (CLError err)
 
-wrapErrorEither :: (Ptr CLint -> IO a) -> IO (Either ErrorCode a)
-wrapErrorEither thunk = alloca $ \errorP -> do
-    ret <- thunk errorP
+wrapErrorResult :: (Ptr CLint -> IO a) -> IO a
+wrapErrorResult action = alloca $ \errorP -> do
+    ret <- action errorP
     err <- ErrorCode <$> peek errorP
     if err == clSuccess
-        then return . Right $ ret
-        else return . Left $ err 
-                
-wrapGetInfo :: (CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint) -> IO (Either ErrorCode (ForeignPtr (), CLsizei))
-wrapGetInfo raw_infoFn = alloca $ \value_size_ret ->
-    wrapError (raw_infoFn 0 nullPtr value_size_ret) >>=
-        maybe (do retsize <- peek value_size_ret
-                  param_data <- (mallocForeignPtrBytes . fromIntegral $ retsize) :: IO (ForeignPtr ())
-                  wrapError (withForeignPtr param_data $ \param_dataP -> raw_infoFn retsize param_dataP nullPtr) >>=
-                      maybe (return (Right (param_data,retsize))) (return.Left))
-                  (return.Left)
+        then return ret
+        else throwIO (CLError err)
 
-wrapGetNumElements :: Storable a => (CLuint -> Ptr a -> Ptr CLuint -> IO CLint) -> IO (Either ErrorCode [a])
-wrapGetNumElements raw_Fn = alloca (\value_size_ret ->
-    wrapError (raw_Fn 0 nullPtr value_size_ret) >>=
-        maybe (do
-            retsize <- peek value_size_ret
-            allocaArray (fromIntegral retsize)
-                (\param_dataP -> wrapError (raw_Fn retsize param_dataP nullPtr) >>=
-                    maybe (fmap Right $ peekArray (fromIntegral retsize) param_dataP) (return.Left)))
-            (return.Left))
+wrapGetInfo :: (CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint) -> IO (ForeignPtr (), CLsizei)
+wrapGetInfo raw_infoFn = alloca $ \value_size_ret -> do
+    raw_infoFn 0 nullPtr value_size_ret
+    retsize <- peek value_size_ret
+    param_data <- (mallocForeignPtrBytes . fromIntegral $ retsize) :: IO (ForeignPtr ())
+    wrapError . withForeignPtr param_data $ \param_dataP -> raw_infoFn retsize param_dataP nullPtr
+    return (param_data, retsize)
+
+wrapGetNumElements :: Storable a => (CLuint -> Ptr a -> Ptr CLuint -> IO CLint) -> IO [a]
+wrapGetNumElements raw_Fn = alloca $ \value_size_ret -> do
+    raw_Fn 0 nullPtr value_size_ret
+    retsize <- peek value_size_ret
+    allocaArray (fromIntegral retsize) $ \param_dataP -> do
+        wrapError $ raw_Fn retsize param_dataP nullPtr
+        peekArray (fromIntegral retsize) param_dataP
 
 withArrayNull0 a as = withArrayNull $ as ++ [a]
 

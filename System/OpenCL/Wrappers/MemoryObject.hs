@@ -30,39 +30,38 @@ import Data.Maybe
 import Data.Bits
 
 
-clCreateBuffer :: Context -> MemFlags -> CLsizei -> Ptr () -> IO (Either ErrorCode Mem)
-clCreateBuffer ctx (MemFlags flags) size host_ptr = wrapErrorEither $ raw_clCreateBuffer ctx flags size host_ptr 
+clCreateBuffer :: Context -> MemFlags -> CLsizei -> Ptr () -> IO Mem
+clCreateBuffer ctx (MemFlags flags) size host_ptr = wrapErrorResult $ raw_clCreateBuffer ctx flags size host_ptr 
               
-clCreateImage2D :: Context -> MemFlags -> ImageFormat -> CLsizei -> CLsizei -> CLsizei -> Ptr () -> IO (Either ErrorCode Mem)
+clCreateImage2D :: Context -> MemFlags -> ImageFormat -> CLsizei -> CLsizei -> CLsizei -> Ptr () -> IO Mem
 clCreateImage2D ctx (MemFlags memflags) (ChannelOrder corder, ChannelType ctype) image_width image_height image_row_pitch host_ptr = allocaArray 2 $ \image_format -> do
     pokeArray image_format [corder,ctype] 
-    wrapErrorEither $ raw_clCreateImage2D ctx memflags image_format image_width image_height image_row_pitch host_ptr
+    wrapErrorResult $ raw_clCreateImage2D ctx memflags image_format image_width image_height image_row_pitch host_ptr
                         
-clCreateImage3D :: Context -> MemFlags -> ImageFormat -> CLsizei -> CLsizei -> CLsizei -> CLsizei -> CLsizei -> Ptr () -> IO (Either ErrorCode Mem)
+clCreateImage3D :: Context -> MemFlags -> ImageFormat -> CLsizei -> CLsizei -> CLsizei -> CLsizei -> CLsizei -> Ptr () -> IO Mem
 clCreateImage3D ctx (MemFlags memflags) (ChannelOrder corder, ChannelType ctype) image_width image_height image_depth image_row_pitch image_slice_pitch host_ptr = allocaArray 2 $ \image_format -> do
     pokeArray image_format [corder,ctype] 
-    wrapErrorEither $ raw_clCreateImage3D ctx memflags image_format image_width image_height image_depth image_row_pitch image_slice_pitch host_ptr 
+    wrapErrorResult $ raw_clCreateImage3D ctx memflags image_format image_width image_height image_depth image_row_pitch image_slice_pitch host_ptr 
                         
-clRetainMemObject :: Mem -> IO (Maybe ErrorCode) 
+clRetainMemObject :: Mem -> IO ()
 clRetainMemObject mem = wrapError $ raw_clRetainMemObject mem
 
-clReleaseMemObject :: Mem -> IO (Maybe ErrorCode) 
+clReleaseMemObject :: Mem -> IO ()
 clReleaseMemObject mem = wrapError $ raw_clReleaseMemObject mem
                                     
-clGetSupportedImageFormats :: Context -> MemFlags -> MemObjectType -> IO (Either ErrorCode [ImageFormat])
+clGetSupportedImageFormats :: Context -> MemFlags -> MemObjectType -> IO [ImageFormat]
 clGetSupportedImageFormats ctx (MemFlags flags) (MemObjectType image_type) = allocaArray 512 $ \image_formats -> alloca $ \num_image_formats -> do
-    err <- wrapError $ raw_clGetSupportedImageFormats ctx flags image_type 512 image_formats num_image_formats
-    maybe (do num_image_formatsN <- peek num_image_formats
-              image_formatsN <- peekArray (fromIntegral num_image_formatsN*2) image_formats
-              let sift (a:b:cs) = (ChannelOrder a,ChannelType b) : sift cs
-                  sift [] = [] 
-              return . Right $ sift image_formatsN )
-          (return . Left) 
-          err
+    wrapError $ raw_clGetSupportedImageFormats ctx flags image_type 512 image_formats num_image_formats
+    num_image_formatsN <- peek num_image_formats
+    image_formatsN <- peekArray (fromIntegral num_image_formatsN*2) image_formats
+    let sift (a:b:cs) = (ChannelOrder a,ChannelType b) : sift cs
+        sift [] = [] 
+    return $ sift image_formatsN
 
-clGetMemObjectInfo :: Mem -> MemInfo -> IO (Either ErrorCode CLMemObjectInfoRetval)
-clGetMemObjectInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetMemObjectInfo mem param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (MemInfo param_name) in case () of 
+clGetMemObjectInfo :: Mem -> MemInfo -> IO CLMemObjectInfoRetval
+clGetMemObjectInfo mem c@(MemInfo param_name) = do
+    (x,size) <- wrapGetInfo $ raw_clGetMemObjectInfo mem param_name
+    case () of
         ()
             | c == clMemType           -> peekOneInfo MemObjectInfoRetvalMemObjectType x
             | c == clMemFlags          -> peekOneInfo MemObjectInfoRetvalMemFlags x
@@ -70,25 +69,24 @@ clGetMemObjectInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetMemObjectI
             | c == clMemHostPtr        -> peekOneInfo MemObjectInfoRetvalPtr x
             | c == clMemMapCount       -> peekOneInfo MemObjectInfoRetvalCLuint x
             | c == clMemReferenceCount -> peekOneInfo MemObjectInfoRetvalCLuint x
-            | c == clMemContext        -> peekOneInfo MemObjectInfoRetvalContext x)
+            | c == clMemContext        -> peekOneInfo MemObjectInfoRetvalContext x
 
-clGetImageInfo :: Mem -> MemInfo -> IO (Either ErrorCode CLImageInfoRetval)
-clGetImageInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetImageInfo mem param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (MemInfo param_name) in case () of 
+clGetImageInfo :: Mem -> MemInfo -> IO CLImageInfoRetval
+clGetImageInfo mem c@(MemInfo param_name) = do
+    (x,size) <- wrapGetInfo $ raw_clGetImageInfo mem param_name
+    case () of
         ()
             | c == clImageElementSize -> peekOneInfo ImageInfoRetvalCLsizei x
             | c == clImageRowPitch    -> peekOneInfo ImageInfoRetvalCLsizei x
             | c == clImageSlicePitch  -> peekOneInfo ImageInfoRetvalCLsizei x
             | c == clImageWidth       -> peekOneInfo ImageInfoRetvalCLsizei x
             | c == clImageHeight      -> peekOneInfo ImageInfoRetvalCLsizei x
-            | c == clImageDepth       -> peekOneInfo ImageInfoRetvalCLsizei x)
+            | c == clImageDepth       -> peekOneInfo ImageInfoRetvalCLsizei x
         
-enqueue :: (CommandQueue -> CLuint -> Ptr Event -> Ptr Event -> IO CLint) -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)      
+enqueue :: (CommandQueue -> CLuint -> Ptr Event -> Ptr Event -> IO CLint) -> CommandQueue -> [Event] -> IO Event
 enqueue fn queue events = alloca $ \event -> withArrayNull events $ \event_wait_list -> do
-    err <- wrapError $ fn queue (fromIntegral events_in_wait_list) event_wait_list event
-    if err == Nothing 
-        then Right <$> peek event 
-        else return (Left . fromJust $ err)
+    wrapError $ fn queue (fromIntegral events_in_wait_list) event_wait_list event
+    peek event
     where events_in_wait_list = length events
     
     
@@ -127,7 +125,7 @@ clEnqueueWriteImage image blocking_read (oa,ob,oc) (ra,rb,rc) row_pitch slice_pi
                 pokeArray origin [oa,ob,oc]
                 raw_clEnqueueWriteImage command_queue image (if blocking_read then clTrue else clFalse) origin region row_pitch slice_pitch ptr num_events_in_wait_list event_wait_list event)                 
 
-clEnqueueCopyImage :: Mem -> Mem -> ImageDims -> ImageDims -> ImageDims -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)  
+clEnqueueCopyImage :: Mem -> Mem -> ImageDims -> ImageDims -> ImageDims -> CommandQueue -> [Event] -> IO Event
 clEnqueueCopyImage src_image dst_image (soa,sob,soc) (doa,dob,doc) (ra,rb,rc) = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> allocaArray 3 $ \src_origin -> allocaArray 3 $ \dst_origin -> allocaArray 3 $ \region -> do 
                 pokeArray region [ra,rb,rc]
@@ -136,7 +134,7 @@ clEnqueueCopyImage src_image dst_image (soa,sob,soc) (doa,dob,doc) (ra,rb,rc) =
                 raw_clEnqueueCopyImage command_queue src_image dst_image src_origin dst_origin region num_events_in_wait_list event_wait_list event)
 
                            
-clEnqueueCopyImageToBuffer :: Mem -> Mem -> ImageDims -> ImageDims -> CLsizei -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)  
+clEnqueueCopyImageToBuffer :: Mem -> Mem -> ImageDims -> ImageDims -> CLsizei -> CommandQueue -> [Event] -> IO Event
 clEnqueueCopyImageToBuffer src_image dst_buffer (soa,sob,soc) (ra,rb,rc) dst_offset = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> allocaArray 3 $ \src_origin -> allocaArray 3 $ \region -> do 
                 pokeArray region [ra,rb,rc]
@@ -153,7 +151,7 @@ clEnqueueCopyImageToBuffer src_image dst_buffer (soa,sob,soc) (ra,rb,rc) dst_off
                     event)
 
 
-clEnqueueCopyBufferToImage :: Mem -> Mem -> CLsizei -> ImageDims -> ImageDims -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)  
+clEnqueueCopyBufferToImage :: Mem -> Mem -> CLsizei -> ImageDims -> ImageDims -> CommandQueue -> [Event] -> IO Event
 clEnqueueCopyBufferToImage src_buffer dst_image src_offset (soa,sob,soc) (ra,rb,rc) = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> allocaArray 3 $ \dst_origin -> allocaArray 3 $ \region -> do 
                 pokeArray region [ra,rb,rc]
@@ -170,10 +168,10 @@ clEnqueueCopyBufferToImage src_buffer dst_image src_offset (soa,sob,soc) (ra,rb,
                     event)
 
 
-clEnqueueMapBuffer :: Mem -> Bool -> MapFlags -> CLsizei -> CLsizei -> CommandQueue -> [Event] -> IO (Either ErrorCode (Ptr (),Event))
+clEnqueueMapBuffer :: Mem -> Bool -> MapFlags -> CLsizei -> CLsizei -> CommandQueue -> [Event] -> IO (Ptr (),Event)
 clEnqueueMapBuffer buffer blocking_map (MapFlags map_flags) offset cb command_queue events = 
-    allocaArray num_events_in_wait_list $ \event_wait_list -> alloca $ \event -> do
-        ret <- wrapErrorEither $ raw_clEnqueueMapBuffer 
+    allocaArray num_events_in_wait_list $ \event_wait_list -> alloca $ \eventP -> do
+        ptr <- wrapErrorResult $ raw_clEnqueueMapBuffer 
             command_queue 
             buffer 
             (if blocking_map then clTrue else clFalse) 
@@ -181,14 +179,13 @@ clEnqueueMapBuffer buffer blocking_map (MapFlags map_flags) offset cb command_qu
             offset 
             cb 
             (fromIntegral num_events_in_wait_list) 
-            event_wait_list 
-            event
-        case ret of 
-            Left err -> return (Left err)
-            Right ptr -> peek event >>= \event -> return $ Right (ptr,event)
+            event_wait_list
+            eventP
+        event <- peek eventP
+        return (ptr,event)
     where num_events_in_wait_list = length events
 
-clEnqueueMapImage :: Mem -> Bool -> MapFlags -> ImageDims -> ImageDims -> CommandQueue -> [Event] -> IO (Either ErrorCode (Ptr (),CLsizei,CLsizei,Event))
+clEnqueueMapImage :: Mem -> Bool -> MapFlags -> ImageDims -> ImageDims -> CommandQueue -> [Event] -> IO (Ptr (),CLsizei,CLsizei,Event)
 clEnqueueMapImage buffer blocking_map (MapFlags map_flags) (oa,ob,oc) (ra,rb,rc) command_queue events = 
     allocaArray num_events_in_wait_list $ \event_wait_list -> 
     alloca $ \event -> 
@@ -198,7 +195,7 @@ clEnqueueMapImage buffer blocking_map (MapFlags map_flags) (oa,ob,oc) (ra,rb,rc)
     alloca $ \image_slice_pitch -> do
         pokeArray origin [oa,ob,oc]
         pokeArray region [ra,rb,rc]        
-        ret <- wrapErrorEither $ raw_clEnqueueMapImage
+        ptr <- wrapErrorResult $ raw_clEnqueueMapImage
             command_queue 
             buffer 
             (if blocking_map then clTrue else clFalse) 
@@ -210,13 +207,10 @@ clEnqueueMapImage buffer blocking_map (MapFlags map_flags) (oa,ob,oc) (ra,rb,rc)
             (fromIntegral num_events_in_wait_list) 
             event_wait_list 
             event
-        case ret of 
-            Left err -> return (Left err)
-            Right ptr -> do 
-                event' <- peek event
-                image_row_pitch' <- peek image_row_pitch
-                image_slice_pitch' <- peek image_slice_pitch
-                return  $ Right (ptr,image_row_pitch',image_slice_pitch', event') 
+        event' <- peek event
+        image_row_pitch' <- peek image_row_pitch
+        image_slice_pitch' <- peek image_slice_pitch
+        return (ptr,image_row_pitch',image_slice_pitch', event') 
         where num_events_in_wait_list = length events
                   
 
