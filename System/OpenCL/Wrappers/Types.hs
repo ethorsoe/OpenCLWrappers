@@ -99,32 +99,6 @@ newtype DeviceMemCacheType = DeviceMemCacheType CLuint
 newtype DeviceLocalMemType = DeviceLocalMemType CLuint
     deriving (Eq,Show,Storable)
 
-data SomeCLException = forall e. (Exception e) => SomeCLException ErrorCode e
-    deriving (Typeable)
-
-instance Show SomeCLException where
-    showsPrec d (SomeCLException _ e) = showsPrec d e
-
-instance Exception SomeCLException
-
-newtype CLError = CLError ErrorCode
-    deriving (Eq,Show,Typeable)
-
-instance Exception CLError where
-    toException e@(CLError err) = toException (SomeCLException err e)
-    fromException e = do
-        SomeCLException err _ <- fromException e
-        return (CLError err)
-
-data CLBuildError = CLBuildError ErrorCode String
-    deriving (Eq,Show,Typeable)
-
-instance Exception CLBuildError where
-    toException e@(CLBuildError err _) = toException (SomeCLException err e)
-    fromException e = do
-        SomeCLException _ e' <- fromException e
-        cast e'
-
 data CLKernelInfoRetval = KernelInfoRetvalString String | KernelInfoRetvalCLuint CLuint | KernelInfoRetvalContext Context | KernelInfoRetvalProgram Program
     deriving(Eq,Show)
 data CLKernelWorkGroupInfoRetval = KernelWorkGroupInfoRetvalCLsizei CLsizei | KernelWorkGroupInfoRetvalCLsizeiList [CLsizei] | KernelWorkGroupInfoRetvalCLulong CLulong
@@ -155,6 +129,226 @@ data CLSamplerInfoRetval = SamplerInfoRetvalCLuint CLuint | SamplerInfoRetvalCon
 type ContextCallback = (CString -> Ptr () -> CLsizei -> Ptr () -> IO ())
 type NativeKernelCallback = Ptr () -> IO ()
 type BuildProgramCallback = Program -> Ptr () -> IO ()
+
+data SomeCLException = forall e. (Exception e) => SomeCLException ErrorCode e
+    deriving (Typeable)
+
+instance Show SomeCLException where
+    showsPrec d (SomeCLException _ e) = showsPrec d e
+
+instance Exception SomeCLException
+
+newtype CLError = CLError ErrorCode
+    deriving (Eq,Typeable)
+
+instance Show CLError where
+    show (CLError e@(ErrorCode n)) =
+        "OpenCL error: " ++ clErrorMessage e ++ " (" ++ show n ++ ")"
+
+instance Exception CLError where
+    toException e@(CLError err) = toException (SomeCLException err e)
+    fromException e = do
+        SomeCLException err _ <- fromException e
+        return (CLError err)
+
+data CLBuildError = CLBuildError ErrorCode String
+    deriving (Eq,Typeable)
+
+instance Show CLBuildError where
+    show (CLBuildError e@(ErrorCode n) s) =
+        "OpenCL error: " ++ clErrorMessage e ++ ": " ++ s ++ " (" ++ show n ++ ")"
+
+instance Exception CLBuildError where
+    toException e@(CLBuildError err _) = toException (SomeCLException err e)
+    fromException e = do
+        SomeCLException _ e' <- fromException e
+        cast e'
+
+
+clErrorMessage :: ErrorCode -> String
+clErrorMessage e
+  | e == clSuccess = "Success"
+  | e == clDeviceNotFound = "Device not found"
+  | e == clDeviceNotAvailable = "Device not available"
+  | e == clCompilerNotAvailable = "Compiler not available"
+  | e == clMemObjectAllocationFailure = "Memory object allocation failure"
+  | e == clOutOfResources = "Out of resources"
+  | e == clOutOfHostMemory = "Out of host memory"
+  | e == clProfilingInfoNotAvailable = "Profiling information not available"
+  | e == clMemCopyOverlap = "Memory copy overlap"
+  | e == clImageFormatMismatch = "Image format mismatch"
+  | e == clImageFormatNotSupported = "Image format not supported"
+  | e == clMapFailure = "Map failure"
+  | e == clInvalidValue = "Invalid value"
+  | e == clInvalidDeviceType = "Invalid device type"
+  | e == clInvalidPlatform = "Invalid platform"
+  | e == clInvalidDevice = "Invalid device"
+  | e == clInvalidContext = "Invalid context"
+  | e == clInvalidQueueProperties = "Invalid queue properties"
+  | e == clInvalidCommandQueue = "Invalid command queue"
+  | e == clInvalidHostPtr = "Invalid host pointer"
+  | e == clInvalidImageFormatDescriptor = "Invalid image format descriptor"
+  | e == clInvalidImageSize = "Invalid image size"
+  | e == clInvalidSampler = "Invalid sampler"
+  | e == clInvalidBinary = "Invalid binary"
+  | e == clInvalidBuildOptions = "Invalid build options"
+  | e == clInvalidProgram = "Invalid program"
+  | e == clInvalidProgramExecutable = "Invalid program executable"
+  | e == clInvalidKernelName = "Invalid kernel name"
+  | e == clInvalidArgIndex = "Invalid argument index"
+  | e == clInvalidArgValue = "Invalid argument value"
+  | e == clInvalidArgSize = "Invalid argument size"
+  | e == clInvalidKernelArgs = "Invalid kernel arguments"
+  | e == clInvalidWorkDimension = "Invalid work dimension"
+  | e == clInvalidWorkGroupSize = "Invalid work group size"
+  | e == clInvalidWorkItemSize = "Invalid work item size"
+  | e == clInvalidGlobalOffset = "Invalid global offset"
+  | e == clInvalidEventWaitList = "Invalid event wait list"
+  | e == clInvalidEvent = "Invalid event"
+  | e == clInvalidOperation = "Invalid operation"
+  | e == clInvalidGLObject = "Invalid OpenGL object"
+  | e == clInvalidBufferSize = "Invalid buffer size"
+  | e == clInvalidMipLevel = "Invalid MIP level"
+  | otherwise = "Unknown error"
+
+clSuccess :: ErrorCode
+clSuccess = ErrorCode 0
+
+clDeviceNotFound :: ErrorCode
+clDeviceNotFound = ErrorCode (-1)
+
+clDeviceNotAvailable :: ErrorCode
+clDeviceNotAvailable = ErrorCode (-2)
+
+clCompilerNotAvailable :: ErrorCode
+clCompilerNotAvailable = ErrorCode (-3)
+
+clMemObjectAllocationFailure :: ErrorCode
+clMemObjectAllocationFailure = ErrorCode (-4)
+
+clOutOfResources :: ErrorCode
+clOutOfResources = ErrorCode (-5)
+
+clOutOfHostMemory :: ErrorCode
+clOutOfHostMemory = ErrorCode (-6)
+
+clProfilingInfoNotAvailable :: ErrorCode
+clProfilingInfoNotAvailable = ErrorCode (-7)
+
+clMemCopyOverlap :: ErrorCode
+clMemCopyOverlap = ErrorCode (-8)
+
+clImageFormatMismatch :: ErrorCode
+clImageFormatMismatch = ErrorCode (-9)
+
+clImageFormatNotSupported :: ErrorCode
+clImageFormatNotSupported = ErrorCode (-10)
+
+clBuildProgramFailure :: ErrorCode
+clBuildProgramFailure = ErrorCode (-11)
+
+clMapFailure :: ErrorCode
+clMapFailure = ErrorCode (-12)
+
+clInvalidValue :: ErrorCode
+clInvalidValue = ErrorCode (-30)
+
+clInvalidDeviceType :: ErrorCode
+clInvalidDeviceType = ErrorCode (-31)
+
+clInvalidPlatform :: ErrorCode
+clInvalidPlatform = ErrorCode (-32)
+
+clInvalidDevice :: ErrorCode
+clInvalidDevice = ErrorCode (-33)
+
+clInvalidContext :: ErrorCode
+clInvalidContext = ErrorCode (-34)
+
+clInvalidQueueProperties :: ErrorCode
+clInvalidQueueProperties = ErrorCode (-35)
+
+clInvalidCommandQueue :: ErrorCode
+clInvalidCommandQueue = ErrorCode (-36)
+
+clInvalidHostPtr :: ErrorCode
+clInvalidHostPtr = ErrorCode (-37)
+
+clInvalidMemObject :: ErrorCode
+clInvalidMemObject = ErrorCode (-38)
+
+clInvalidImageFormatDescriptor :: ErrorCode
+clInvalidImageFormatDescriptor = ErrorCode (-39)
+
+clInvalidImageSize :: ErrorCode
+clInvalidImageSize = ErrorCode (-40)
+
+clInvalidSampler :: ErrorCode
+clInvalidSampler = ErrorCode (-41)
+
+clInvalidBinary :: ErrorCode
+clInvalidBinary = ErrorCode (-42)
+
+clInvalidBuildOptions :: ErrorCode
+clInvalidBuildOptions = ErrorCode (-43)
+
+clInvalidProgram :: ErrorCode
+clInvalidProgram = ErrorCode (-44)
+
+clInvalidProgramExecutable :: ErrorCode
+clInvalidProgramExecutable = ErrorCode (-45)
+
+clInvalidKernelName :: ErrorCode
+clInvalidKernelName = ErrorCode (-46)
+
+clInvalidKernelDefinition :: ErrorCode
+clInvalidKernelDefinition = ErrorCode (-47)
+
+clInvalidKernel :: ErrorCode
+clInvalidKernel = ErrorCode (-48)
+
+clInvalidArgIndex :: ErrorCode
+clInvalidArgIndex = ErrorCode (-49)
+
+clInvalidArgValue :: ErrorCode
+clInvalidArgValue = ErrorCode (-50)
+
+clInvalidArgSize :: ErrorCode
+clInvalidArgSize = ErrorCode (-51)
+
+clInvalidKernelArgs :: ErrorCode
+clInvalidKernelArgs = ErrorCode (-52)
+
+clInvalidWorkDimension :: ErrorCode
+clInvalidWorkDimension = ErrorCode (-53)
+
+clInvalidWorkGroupSize :: ErrorCode
+clInvalidWorkGroupSize = ErrorCode (-54)
+
+clInvalidWorkItemSize :: ErrorCode
+clInvalidWorkItemSize = ErrorCode (-55)
+
+clInvalidGlobalOffset :: ErrorCode
+clInvalidGlobalOffset = ErrorCode (-56)
+
+clInvalidEventWaitList :: ErrorCode
+clInvalidEventWaitList = ErrorCode (-57)
+
+clInvalidEvent :: ErrorCode
+clInvalidEvent = ErrorCode (-58)
+
+clInvalidOperation :: ErrorCode
+clInvalidOperation = ErrorCode (-59)
+
+clInvalidGLObject :: ErrorCode
+clInvalidGLObject = ErrorCode (-60)
+
+clInvalidBufferSize :: ErrorCode
+clInvalidBufferSize = ErrorCode (-61)
+
+clInvalidMipLevel :: ErrorCode
+clInvalidMipLevel = ErrorCode (-62)
+
 
 clQueueOutOfOrderExecModeEnable :: CommandQueueProperties 
 clQueueOutOfOrderExecModeEnable = CommandQueueProperties (1`shiftL`0)

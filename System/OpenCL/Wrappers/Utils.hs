@@ -5,7 +5,6 @@ module System.OpenCL.Wrappers.Utils where
 import Prelude hiding(catch)
 import Foreign
 import Foreign.C
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Types
 import Control.Applicative
 import Control.Monad.Cont

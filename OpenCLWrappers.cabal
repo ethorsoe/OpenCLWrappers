@@ -19,7 +19,6 @@ Library
   exposed-modules: System.OpenCL.Wrappers.CommandQueue
                    System.OpenCL.Wrappers.Context
                    System.OpenCL.Wrappers.DeviceInfo
-                   System.OpenCL.Wrappers.Errors
                    System.OpenCL.Wrappers.Etc
                    System.OpenCL.Wrappers.EventObject
                    System.OpenCL.Wrappers.FlushFinish
