@@ -1,3 +1,4 @@
+{-# LANGUAGE ScopedTypeVariables #-}
 {-| OpenCL utility functions for improving FFI wrapper code. -}
 module System.OpenCL.Wrappers.Utils where
 
@@ -7,7 +8,6 @@ import Foreign.C
 import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Types
 import Control.Applicative
-import Data.Maybe
 import Control.Monad.Cont
 import Control.Exception
 
@@ -26,7 +26,7 @@ wrapErrorResult action = alloca $ \errorP -> do
 
 wrapGetInfo :: (CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint) -> IO (ForeignPtr (), CLsizei)
 wrapGetInfo raw_infoFn = alloca $ \value_size_ret -> do
-    raw_infoFn 0 nullPtr value_size_ret
+    wrapError $ raw_infoFn 0 nullPtr value_size_ret
     retsize <- peek value_size_ret
     param_data <- (mallocForeignPtrBytes . fromIntegral $ retsize) :: IO (ForeignPtr ())
     wrapError . withForeignPtr param_data $ \param_dataP -> raw_infoFn retsize param_dataP nullPtr
@@ -34,12 +34,13 @@ wrapGetInfo raw_infoFn = alloca $ \value_size_ret -> do
 
 wrapGetNumElements :: Storable a => (CLuint -> Ptr a -> Ptr CLuint -> IO CLint) -> IO [a]
 wrapGetNumElements raw_Fn = alloca $ \value_size_ret -> do
-    raw_Fn 0 nullPtr value_size_ret
+    wrapError $ raw_Fn 0 nullPtr value_size_ret
     retsize <- peek value_size_ret
     allocaArray (fromIntegral retsize) $ \param_dataP -> do
         wrapError $ raw_Fn retsize param_dataP nullPtr
         peekArray (fromIntegral retsize) param_dataP
 
+withArrayNull0 :: Storable a => a -> [a] -> (Ptr a -> IO b) -> IO b
 withArrayNull0 a as = withArrayNull $ as ++ [a]
 
 withArrayNull :: Storable a => [a] -> (Ptr a -> IO b) -> IO b
@@ -48,7 +49,7 @@ withArrayNull as f = if null as
                            else withArray as f
 
 nest :: [(r -> a) -> a] -> ([r] -> a) -> a
-nest xs = runCont (sequence (map cont xs))
+nest xs = runCont (mapM cont xs)
 
 withCStringArray0 :: [String] -> (Ptr CString -> IO a) -> IO a
 withCStringArray0 strings act = nest (map withCString strings)
@@ -57,12 +58,13 @@ withCStringArray0 strings act = nest (map withCString strings)
 peekOneInfo :: Storable a => (a -> b) -> ForeignPtr () -> IO b
 peekOneInfo f x = withForeignPtr x (\y -> fmap f (peek $ castPtr y))
 
-peekManyInfo :: Storable a => ([a] -> b) -> ForeignPtr () -> CLsizei -> IO b
-peekManyInfo f x size = do
-    c <- return undefined
-    a <- withForeignPtr x (\y -> (peekArray ( div (fromIntegral size) $ sizeOf c) $ castPtr y))
-    return (c:a)
-    return $ f a
+peekManyInfo :: forall a b. Storable a => ([a] -> b) -> ForeignPtr () -> CLsizei -> IO b
+peekManyInfo f x size =
+    fmap f . withForeignPtr x $ \y ->
+        peekArray (fromIntegral size `div` sizeOf (undefined :: a)) $ castPtr y
 
 peekStringInfo :: (String -> b) -> ForeignPtr () -> IO b
 peekStringInfo f x = withForeignPtr x (\y -> fmap f (peekCString $ castPtr y))
+
+badArgument :: (Show a) => String -> a -> b
+badArgument func arg = error $ func ++ ": bad argument: " ++ show arg

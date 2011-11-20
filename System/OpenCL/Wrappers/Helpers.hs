@@ -15,7 +15,6 @@ import System.OpenCL.Wrappers.FlushFinish
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Ptr
-import Control.Applicative
 import Control.Exception
 
 pushKernelParams :: forall b. Storable b => Kernel -> CLuint -> [b] -> IO ()
@@ -26,7 +25,7 @@ pushKernelParams _ _ _ = return ()
 
 syncKernelFun :: forall b. Storable b => CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [b] -> IO ()
 syncKernelFun _ kernel queue a b [] = do
-    clEnqueueNDRangeKernel queue kernel a b []
+    _ <- clEnqueueNDRangeKernel queue kernel a b []
     clFinish queue
 syncKernelFun argNum kernel queue a b (x:xs) = do
     withArray [x] $ \y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)

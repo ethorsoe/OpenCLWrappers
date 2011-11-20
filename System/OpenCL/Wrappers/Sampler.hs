@@ -6,13 +6,8 @@ module System.OpenCL.Wrappers.Sampler
 where
 
 import System.OpenCL.Wrappers.Types
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
-import Foreign
-import Foreign.C
-import Control.Applicative
-import Data.Maybe
 
 
 clCreateSampler :: Context -> Bool -> AddressingMode -> FilterMode -> IO Sampler
@@ -27,7 +22,7 @@ clReleaseSampler sampler = wrapError $ raw_clReleaseSampler sampler
 
 clGetSamplerInfo :: Sampler -> SamplerInfo -> IO CLSamplerInfoRetval
 clGetSamplerInfo sampler c@(SamplerInfo param_name) = do
-    (x,size) <- wrapGetInfo $ raw_clGetSamplerInfo sampler param_name
+    (x,_) <- wrapGetInfo $ raw_clGetSamplerInfo sampler param_name
     case () of
         ()
             | c == clSamplerReferenceCount   -> peekOneInfo SamplerInfoRetvalCLuint x
@@ -35,4 +30,5 @@ clGetSamplerInfo sampler c@(SamplerInfo param_name) = do
             | c == clSamplerAddressingMode   -> peekOneInfo SamplerInfoRetvalAddressingMode x
             | c == clSamplerFilterMode       -> peekOneInfo SamplerInfoRetvalFilterMode x
             | c == clSamplerNormalizedCoords -> peekOneInfo SamplerInfoRetvalCLbool x
+            | otherwise                      -> badArgument "clGetSamplerInfo" c
 

@@ -4,7 +4,6 @@ module System.OpenCL.Wrappers.DeviceInfo
 where
 
 import System.OpenCL.Wrappers.Types
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
 
@@ -13,9 +12,8 @@ clGetDeviceIDs :: PlatformID -> DeviceType -> IO [DeviceID]
 clGetDeviceIDs platform (DeviceType device_type) = wrapGetNumElements $ raw_clGetDeviceIDs platform device_type
       
 clGetDeviceInfo :: DeviceID -> DeviceInfo -> IO CLDeviceInfoRetval
-clGetDeviceInfo obj (DeviceInfo param_name) = do
+clGetDeviceInfo obj c@(DeviceInfo param_name) = do
     (x,size) <- wrapGetInfo $ raw_clGetDeviceInfo obj param_name
-    let c= DeviceInfo param_name
     case () of
         ()
             | c == clDeviceAddressBits                -> peekOneInfo DeviceInfoRetvalCLuint x
@@ -70,3 +68,4 @@ clGetDeviceInfo obj (DeviceInfo param_name) = do
             | c == clDeviceVendorID                   -> peekOneInfo DeviceInfoRetvalCLuint x
             | c == clDeviceVersion                    -> peekStringInfo DeviceInfoRetvalString x
             | c == clDriverVersion                    -> peekStringInfo DeviceInfoRetvalString x
+            | otherwise                               -> badArgument "clGetDeviceInfo" c

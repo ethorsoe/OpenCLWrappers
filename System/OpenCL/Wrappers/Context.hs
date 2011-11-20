@@ -40,3 +40,4 @@ clGetContextInfo ctx c@(ContextInfo param_name) = do
             | c == clContextReferenceCount -> peekOneInfo ContextInfoRetvalCLuint x
             | c == clContextDevices        -> peekManyInfo ContextInfoRetvalDeviceIDList x size
             | c == clContextProperties     -> peekManyInfo ContextInfoRetvalContextPropertiesList x size
+            | otherwise                    -> badArgument "clGetContextInfo" c

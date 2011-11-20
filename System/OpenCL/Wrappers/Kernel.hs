@@ -12,15 +12,13 @@ module System.OpenCL.Wrappers.Kernel
 where
 
 import System.OpenCL.Wrappers.Types
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
 import Foreign
 import Foreign.C
-import Control.Applicative
-import Data.Maybe
 
 
+clCreateKernel :: Program -> String -> IO Kernel
 clCreateKernel program init_name = withCString init_name (\x -> wrapErrorResult $ raw_clCreateKernel program x)
 
 clCreateKernelsInProgram :: Program -> CLuint -> IO [Kernel]
@@ -41,7 +39,7 @@ clSetKernelArg kernel arg_index arg_size arg_value =
 
 clGetKernelInfo :: Kernel -> KernelInfo -> IO CLKernelInfoRetval
 clGetKernelInfo kernel c@(KernelInfo param_name) = do
-    (x,size) <- wrapGetInfo $ raw_clGetKernelInfo kernel param_name
+    (x,_) <- wrapGetInfo $ raw_clGetKernelInfo kernel param_name
     case () of
         ()
             | c == clKernelFunctionName   -> peekStringInfo KernelInfoRetvalString x
@@ -49,6 +47,7 @@ clGetKernelInfo kernel c@(KernelInfo param_name) = do
             | c == clKernelReferenceCount -> peekOneInfo KernelInfoRetvalCLuint x
             | c == clKernelContext        -> peekOneInfo KernelInfoRetvalContext x
             | c == clKernelProgram        -> peekOneInfo KernelInfoRetvalProgram x
+            | otherwise                   -> badArgument "clGetKernelInfo" c
 
 clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> KernelWorkGroupInfo -> IO CLKernelWorkGroupInfoRetval
 clGetKernelWorkGroupInfo kernel device c@(KernelWorkGroupInfo param_name) = do
@@ -58,6 +57,7 @@ clGetKernelWorkGroupInfo kernel device c@(KernelWorkGroupInfo param_name) = do
             | c == clKernelWorkGroupSize        -> peekOneInfo KernelWorkGroupInfoRetvalCLsizei x
             | c == clKernelCompileWorkGroupSize -> peekManyInfo KernelWorkGroupInfoRetvalCLsizeiList x size
             | c == clKernelLocalMemSize         -> peekOneInfo KernelWorkGroupInfoRetvalCLulong x
+            | otherwise                         -> badArgument "clGetKernelWorkGroupInfo" c
 
 clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> [CLsizei] -> [CLsizei] -> [Event] -> IO Event
 clEnqueueNDRangeKernel queue kernel global_work_sizeL local_work_sizeL event_wait_listL = 
@@ -89,7 +89,17 @@ clEnqueueNativeKernel user_funcF args cb_args mem_listL args_mem_locL event_wait
         pokeArray event_wait_list event_wait_listL
         pokeArray mem_list mem_listL
         pokeArray args_mem_loc args_mem_locL
-        raw_clEnqueueNativeKernel user_func args cb_args (fromIntegral num_mem_objects) mem_list args_mem_loc (fromIntegral num_events_in_wait_list) event_wait_list event
+        wrapError $
+            raw_clEnqueueNativeKernel
+                user_func
+                args
+                cb_args
+                (fromIntegral num_mem_objects)
+                mem_list
+                args_mem_loc
+                (fromIntegral num_events_in_wait_list)
+                event_wait_list
+                event
         peek event
     where num_events_in_wait_list = length event_wait_listL
           num_mem_objects = length mem_listL

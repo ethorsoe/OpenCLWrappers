@@ -27,9 +27,9 @@ clCreateProgramWithSource ctx source_code = do
     let count = length strings
         strings = lines source_code
         lengths = (fromIntegral . length) <$> strings
-    withArray lengths $ (\lengthsP -> 
-        withCStringArray0 strings $ (\stringsP -> 
-            wrapErrorResult $ raw_clCreateProgramWithSource ctx (fromIntegral count) stringsP lengthsP))   
+    withArray lengths $ \lengthsP -> 
+        withCStringArray0 strings $ \stringsP -> 
+            wrapErrorResult $ raw_clCreateProgramWithSource ctx (fromIntegral count) stringsP lengthsP
 
 clCreateProgramWithBinary :: Context -> [(DeviceID,SBS.ByteString)] -> IO Program
 clCreateProgramWithBinary context devbin_pair = 
@@ -67,7 +67,7 @@ clBuildProgram program devices ops pfn_notifyF user_data =
     where num_devices = length devices   
 
 clUnloadCompiler :: IO ()
-clUnloadCompiler = wrapError $ raw_clUnloadCompiler
+clUnloadCompiler = wrapError raw_clUnloadCompiler
 
 clGetProgramInfo :: Program -> ProgramInfo -> IO CLProgramInfoRetval
 clGetProgramInfo program c@(ProgramInfo param_name) = do
@@ -81,11 +81,14 @@ clGetProgramInfo program c@(ProgramInfo param_name) = do
             | c == clProgramSource         -> peekStringInfo ProgramInfoRetvalString x
             | c == clProgramBinarySizes    -> peekManyInfo ProgramInfoRetvalCLsizeiList x size
             | c == clProgramBinaries       -> peekManyInfo ProgramInfoRetvalPtrList x size
+            | otherwise                    -> badArgument "clGetProgramInfo" c
 
 clGetProgramBuildInfo :: Program -> DeviceID -> ProgramBuildInfo -> IO CLProgramBuildInfoRetval
 clGetProgramBuildInfo program devID c@(ProgramBuildInfo param_name) = do
     (x,_) <- wrapGetInfo $ raw_clGetProgramBuildInfo program devID param_name
     case () of
         ()
-            | c == clProgramBuildStatus -> peekOneInfo (ProgramBuildInfoRetvalBuildStatus . BuildStatus) x
-            | otherwise                 -> peekStringInfo (ProgramBuildInfoRetvalString) x
+            | c == clProgramBuildStatus  -> peekOneInfo (ProgramBuildInfoRetvalBuildStatus . BuildStatus) x
+            | c == clProgramBuildOptions -> peekStringInfo ProgramBuildInfoRetvalString x
+            | c == clProgramBuildLog     -> peekStringInfo ProgramBuildInfoRetvalString x
+            | otherwise                  -> badArgument "clGetProgramBuildInfo" c

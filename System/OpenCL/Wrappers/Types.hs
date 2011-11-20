@@ -43,60 +43,61 @@ type ImageFormat = (ChannelOrder,ChannelType)
 type ImageDims = (CLsizei,CLsizei,CLsizei)
 
 newtype ChannelOrder = ChannelOrder CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype ChannelType = ChannelType CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype DeviceType = DeviceType CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype ContextInfo = ContextInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype CommandQueueProperties = CommandQueueProperties CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype CommandQueueInfo = CommandQueueInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype ErrorCode = ErrorCode CLint
     deriving (Eq,Ord,Show,Read,Typeable)
 newtype EventInfo = EventInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype ProfilingInfo = ProfilingInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype KernelInfo = KernelInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype KernelWorkGroupInfo = KernelWorkGroupInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype MapFlags = MapFlags CLbitfield
+    deriving (Eq,Show)
 newtype MemFlags = MemFlags CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype MemObjectType = MemObjectType CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype MemInfo = MemInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype PlatformInfo = PlatformInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype SamplerInfo = SamplerInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype AddressingMode = AddressingMode CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype FilterMode = FilterMode CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype ProgramInfo = ProgramInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype ProgramBuildInfo = ProgramBuildInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype BuildStatus = BuildStatus CLint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype DeviceInfo = DeviceInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype DeviceFPConfig = DeviceFPConfig CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype CommandType = CommandType CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype DeviceExecCapabilities = DeviceExecCapabilities CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype DeviceMemCacheType = DeviceMemCacheType CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype DeviceLocalMemType = DeviceLocalMemType CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 
 data SomeCLException = forall e. (Exception e) => SomeCLException ErrorCode e
     deriving (Typeable)
@@ -125,31 +126,31 @@ instance Exception CLBuildError where
         cast e'
 
 data CLKernelInfoRetval = KernelInfoRetvalString String | KernelInfoRetvalCLuint CLuint | KernelInfoRetvalContext Context | KernelInfoRetvalProgram Program
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLKernelWorkGroupInfoRetval = KernelWorkGroupInfoRetvalCLsizei CLsizei | KernelWorkGroupInfoRetvalCLsizeiList [CLsizei] | KernelWorkGroupInfoRetvalCLulong CLulong
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLImageInfoRetval = ImageInfoRetvalCLsizei CLsizei | ImageInfoRetvalImageFormat ImageFormat | ImageInfoRetvalPtr (Ptr ())
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLMemObjectInfoRetval = MemObjectInfoRetvalMemObjectType MemObjectType | MemObjectInfoRetvalMemFlags MemFlags | MemObjectInfoRetvalCLsizei CLsizei | MemObjectInfoRetvalPtr (Ptr ()) | MemObjectInfoRetvalCLuint CLuint | MemObjectInfoRetvalContext Context | MemObjectInfoRetvalMem Mem
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLEventInfoRetval = EventInfoRetvalCommandQueue CommandQueue | EventInfoRetvalContext Context| EventInfoRetvalCommandType CommandType | EventInfoRetvalCLint CLint | EventInfoRetvalCLuint CLuint
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLEventProfilingInfoRetval = EventProfilingInfoRetvalCLulong CLulong
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLContextInfoRetval = ContextInfoRetvalCLuint CLuint | ContextInfoRetvalDeviceIDList [DeviceID] | ContextInfoRetvalContextPropertiesList [ContextProperties]
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLCommandQueueInfoRetval = CommandQueueInfoRetvalContext Context | CommandQueueInfoRetvalDeviceID DeviceID | CommandQueueInfoRetvalCLuint CLuint | CommandQueueInfoRetvalCommandQueueProperties CommandQueueProperties
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLDeviceInfoRetval = DeviceInfoRetvalString String | DeviceInfoRetvalCLuint CLuint | DeviceInfoRetvalCLbool CLbool | DeviceInfoRetvalDeviceFPConfig DeviceFPConfig | DeviceInfoRetvalDeviceExecCapabilities DeviceExecCapabilities | DeviceInfoRetvalCLulong CLulong | DeviceInfoRetvalDeviceMemCacheType DeviceMemCacheType | DeviceInfoRetvalCLsizei CLsizei | DeviceInfoRetvalDeviceLocalMemType DeviceLocalMemType | DeviceInfoRetvalCLsizeiList [CLsizei] | DeviceInfoRetvalPlatformID PlatformID | DeviceInfoRetvalCommandQueueProperties CommandQueueProperties | DeviceInfoRetvalDeviceType DeviceType
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLProgramInfoRetval = ProgramInfoRetvalCLUint CLuint | ProgramInfoRetvalContext Context | ProgramInfoRetvalDeviceIDList [DeviceID] | ProgramInfoRetvalString String | ProgramInfoRetvalPtrList [Ptr ()] | ProgramInfoRetvalCLsizeiList [CLsizei]
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLProgramBuildInfoRetval = ProgramBuildInfoRetvalBuildStatus BuildStatus | ProgramBuildInfoRetvalString String
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLPlatformInfoRetval = PlatformInfoRetvalString String
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLSamplerInfoRetval = SamplerInfoRetvalCLuint CLuint | SamplerInfoRetvalContext Context | SamplerInfoRetvalAddressingMode AddressingMode | SamplerInfoRetvalFilterMode FilterMode | SamplerInfoRetvalCLbool CLbool
-    deriving(Eq)
+    deriving(Eq,Show)
 
 type ContextCallback = (CString -> Ptr () -> CLsizei -> Ptr () -> IO ())
 type NativeKernelCallback = Ptr () -> IO ()
@@ -376,8 +377,11 @@ clProfilingCommandEnd  :: ProfilingInfo
 clProfilingCommandEnd  = ProfilingInfo 0x1283
 
 
-clFalse = 0 :: CLbool
-clTrue = 1 :: CLbool
+clFalse :: CLbool
+clFalse = 0
+
+clTrue :: CLbool
+clTrue = 1
 
 
 clDeviceTypeDefault :: DeviceType 
@@ -405,7 +409,8 @@ clContextDevices = ContextInfo 0x1081
 clContextProperties :: ContextInfo 
 clContextProperties = ContextInfo 0x1082
 
-clContextPlatform = 0x1084
+clContextPlatform :: ContextInfo
+clContextPlatform = ContextInfo 0x1084
 
 
 
@@ -667,7 +672,10 @@ clAddressClamp = AddressingMode 0x1132
 clAddressRepeat :: AddressingMode 
 clAddressRepeat = AddressingMode 0x1133
 
+clFilterNearest :: FilterMode
 clFilterNearest = FilterMode 0x1140
+
+clFilterLinear :: FilterMode
 clFilterLinear = FilterMode 0x1141
 
 

@@ -11,7 +11,7 @@ import Foreign(withArray,peek,alloca)
 
 clEnqueueMarker :: CommandQueue -> IO Event
 clEnqueueMarker queue = alloca $ \eventP -> do
-    raw_clEnqueueMarker queue eventP
+    wrapError $ raw_clEnqueueMarker queue eventP
     peek eventP
     
 clEnqueueWaitForEvents :: CommandQueue -> [Event] -> IO ()

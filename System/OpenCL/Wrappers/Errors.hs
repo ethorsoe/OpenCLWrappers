@@ -4,7 +4,7 @@ module System.OpenCL.Wrappers.Errors where
 import System.OpenCL.Wrappers.Types
 
 clSuccess :: ErrorCode
-clSuccess = ErrorCode (0)
+clSuccess = ErrorCode 0
 
 clDeviceNotFound :: ErrorCode
 clDeviceNotFound = ErrorCode (-1)
@@ -116,27 +116,29 @@ clInvalidWorkDimension = ErrorCode (-53)
 
 clInvalidWorkGroupSize :: ErrorCode
 clInvalidWorkGroupSize = ErrorCode (-54)
+
 clInvalidWorkItemSize :: ErrorCode
-
 clInvalidWorkItemSize = ErrorCode (-55)
+
 clInvalidGlobalOffset :: ErrorCode
-
 clInvalidGlobalOffset = ErrorCode (-56)
+
 clInvalidEventWaitList :: ErrorCode
-
 clInvalidEventWaitList = ErrorCode (-57)
+
 clInvalidEvent :: ErrorCode
-
 clInvalidEvent = ErrorCode (-58)
+
 clInvalidOperation :: ErrorCode
-
 clInvalidOperation = ErrorCode (-59)
+
 clInvalidGLObject :: ErrorCode
-
 clInvalidGLObject = ErrorCode (-60)
-clInvalidBufferSize :: ErrorCode
 
+clInvalidBufferSize :: ErrorCode
 clInvalidBufferSize = ErrorCode (-61)
+
+clInvalidMipLevel :: ErrorCode
 clInvalidMipLevel = ErrorCode (-62)
 
 
