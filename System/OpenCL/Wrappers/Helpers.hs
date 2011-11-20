@@ -7,6 +7,7 @@ module System.OpenCL.Wrappers.Helpers
     ,pushKernelParams)
 where
 
+import Prelude hiding(catch)
 import System.OpenCL.Wrappers.Kernel
 import System.OpenCL.Wrappers.Types
 import System.OpenCL.Wrappers.ProgramObject
@@ -14,44 +15,44 @@ import System.OpenCL.Wrappers.FlushFinish
 import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Ptr
+import Control.Exception
 
-pushKernelParams :: forall b. Storable b => Kernel -> CLuint -> [b] -> IO (Maybe ErrorCode)
-pushKernelParams kernel argNum (x:xs) = 
-    withArray [x] (\y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)) >>=
-        maybe (pushKernelParams kernel (argNum + 1) xs) (return.Just)
-pushKernelParams _ _ _ = return Nothing
+pushKernelParams :: forall b. Storable b => Kernel -> CLuint -> [b] -> IO ()
+pushKernelParams kernel argNum (x:xs) = do
+    withArray [x] $ \y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)
+    pushKernelParams kernel (argNum + 1) xs
+pushKernelParams _ _ _ = return ()
 
-syncKernelFun :: forall b. Storable b => CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [b] -> IO (Maybe ErrorCode)
-syncKernelFun _ kernel queue a b [] =
-        clEnqueueNDRangeKernel queue kernel a b [] >>=
-            either (return.Just) (\_ -> clFinish queue >>= maybe (return Nothing) (return.Just))
-syncKernelFun argNum kernel queue a b (x:xs) =
-        withArray [x] (\y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)) >>=
-            maybe (syncKernelFun (argNum + 1) kernel queue a b xs) (return.Just)
+syncKernelFun :: forall b. Storable b => CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [b] -> IO ()
+syncKernelFun _ kernel queue a b [] = do
+    _ <- clEnqueueNDRangeKernel queue kernel a b []
+    clFinish queue
+syncKernelFun argNum kernel queue a b (x:xs) = do
+    withArray [x] $ \y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)
+    syncKernelFun (argNum + 1) kernel queue a b xs
 
-createSyncKernel :: forall b. Storable b => Program -> CommandQueue -> String -> [Int] -> [Int] -> IO (Either ErrorCode ([b] -> IO (Maybe ErrorCode)))
-createSyncKernel program queue initFun globalWorkRange localWorkRange =
-        clCreateKernel program initFun >>=
-            either (return.Left) (\k -> return.Right $ syncKernelFun 0 k queue (map fromIntegral globalWorkRange) (map fromIntegral localWorkRange))
+createSyncKernel :: forall b. Storable b => Program -> CommandQueue -> String -> [Int] -> [Int] -> IO ([b] -> IO ())
+createSyncKernel program queue initFun globalWorkRange localWorkRange = do
+    k <- clCreateKernel program initFun
+    return $ syncKernelFun 0 k queue (map fromIntegral globalWorkRange) (map fromIntegral localWorkRange)
 
-createAsyncKernelWithParams :: forall b. Storable b => Program -> CommandQueue -> String -> [Int] -> [Int] -> [b] -> IO (Either ErrorCode ([Event] -> IO (Either ErrorCode Event)))
-createAsyncKernelWithParams program queue initFun globalWorkRange localWorkRange params =
-        clCreateKernel program initFun >>=
-            either (return.Left) (\k -> pushKernelParams k 0 params >>=
-                maybe (return.Right $ clEnqueueNDRangeKernel queue k (map fromIntegral globalWorkRange) (map fromIntegral localWorkRange)) (return.Left)) 
+createAsyncKernelWithParams :: forall b. Storable b => Program -> CommandQueue -> String -> [Int] -> [Int] -> [b] -> IO ([Event] -> IO Event)
+createAsyncKernelWithParams program queue initFun globalWorkRange localWorkRange params = do
+    k <- clCreateKernel program initFun
+    pushKernelParams k 0 params
+    return $ clEnqueueNDRangeKernel queue k (map fromIntegral globalWorkRange) (map fromIntegral localWorkRange)
 
-buildProgram :: String -> String -> Context -> DeviceID -> IO (Either (ErrorCode, String) Program)
-buildProgram source opts context dID =
-    clCreateProgramWithSource context source >>=
-        either (\x -> return $ Left (x, "")) (\program -> clBuildProgram program [dID] opts Nothing nullPtr >>=
-            maybe (return $ Right program) (\x -> do
-                y <- fmap Left $ reportBuildFailure program dID x
-                _ <- clReleaseProgram program
-                return y))
+buildProgram :: String -> String -> Context -> DeviceID -> IO Program
+buildProgram source opts context dID = do
+    program <- clCreateProgramWithSource context source
+    clBuildProgram program [dID] opts Nothing nullPtr `catch` \(CLError eCode) -> do
+        err <- reportBuildFailure program dID eCode
+        clReleaseProgram program
+        throwIO err
+    return program
 
-reportBuildFailure :: Program -> DeviceID -> ErrorCode -> IO (ErrorCode,String)
-reportBuildFailure program dID eCode = clGetProgramBuildInfo program dID clProgramBuildLog >>=
-        either (\x -> return (x,"")) (\x -> case x of
-            (ProgramBuildInfoRetvalString s) -> return (eCode,s)
-            _                                -> undefined) 
-
+reportBuildFailure :: Program -> DeviceID -> ErrorCode -> IO SomeException
+reportBuildFailure program dID eCode =
+    handle (\err -> return $ toException (err :: SomeCLException)) $ do
+        ProgramBuildInfoRetvalString s <- clGetProgramBuildInfo program dID clProgramBuildLog
+        return $ toException (CLBuildError eCode s)

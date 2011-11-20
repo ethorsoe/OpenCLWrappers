@@ -36,7 +36,7 @@
     * Side-effectful procedures capable of returning an error code only return a Maybe ErrorCode, with Nothing returned upon success
     
     * Procedures which follow the pattern of returning a pointer to an object and taking a final parameter as an error code instead
-      return Either ErrorCode @ObjectType@ 
+      return @ObjectType@, and throw a Haskell exception when an error occurs.
       
     * Enumerations and constants are replaced by newtypes for the sake of type-safety.
 -}
@@ -44,7 +44,6 @@ module System.OpenCL.Wrappers
     (module System.OpenCL.Wrappers.CommandQueue
     ,module System.OpenCL.Wrappers.Context
     ,module System.OpenCL.Wrappers.DeviceInfo
-    ,module System.OpenCL.Wrappers.Errors
     ,module System.OpenCL.Wrappers.Etc
     ,module System.OpenCL.Wrappers.EventObject
     ,module System.OpenCL.Wrappers.FlushFinish
@@ -62,7 +61,6 @@ where
 import System.OpenCL.Wrappers.CommandQueue
 import System.OpenCL.Wrappers.Context
 import System.OpenCL.Wrappers.DeviceInfo
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Etc
 import System.OpenCL.Wrappers.EventObject
 import System.OpenCL.Wrappers.FlushFinish

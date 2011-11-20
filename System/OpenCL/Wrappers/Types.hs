@@ -1,7 +1,10 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+{-# LANGUAGE DeriveDataTypeable, GeneralizedNewtypeDeriving, ExistentialQuantification #-}
 {-| Declaration of types, bounds and constants -}
 module System.OpenCL.Wrappers.Types where
 
+import Prelude hiding(catch)
+import Data.Typeable
+import Control.Exception
 import Foreign.C.Types
 import Foreign.C.String(CString)
 import Foreign
@@ -40,90 +43,312 @@ type ImageFormat = (ChannelOrder,ChannelType)
 type ImageDims = (CLsizei,CLsizei,CLsizei)
 
 newtype ChannelOrder = ChannelOrder CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype ChannelType = ChannelType CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype DeviceType = DeviceType CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype ContextInfo = ContextInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype CommandQueueProperties = CommandQueueProperties CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype CommandQueueInfo = CommandQueueInfo CLuint
-    deriving (Eq)
-newtype ErrorCode = ErrorCode CLint deriving (Eq,Ord,Show,Read)
+    deriving (Eq,Show)
+newtype ErrorCode = ErrorCode CLint
+    deriving (Eq,Ord,Show,Read,Typeable)
 newtype EventInfo = EventInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype ProfilingInfo = ProfilingInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype KernelInfo = KernelInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype KernelWorkGroupInfo = KernelWorkGroupInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype MapFlags = MapFlags CLbitfield
+    deriving (Eq,Show)
 newtype MemFlags = MemFlags CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype MemObjectType = MemObjectType CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype MemInfo = MemInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype PlatformInfo = PlatformInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype SamplerInfo = SamplerInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype AddressingMode = AddressingMode CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype FilterMode = FilterMode CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype ProgramInfo = ProgramInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype ProgramBuildInfo = ProgramBuildInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype BuildStatus = BuildStatus CLint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype DeviceInfo = DeviceInfo CLuint
-    deriving (Eq)
+    deriving (Eq,Show)
 newtype DeviceFPConfig = DeviceFPConfig CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype CommandType = CommandType CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype DeviceExecCapabilities = DeviceExecCapabilities CLbitfield
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype DeviceMemCacheType = DeviceMemCacheType CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 newtype DeviceLocalMemType = DeviceLocalMemType CLuint
-    deriving (Eq,Storable)
+    deriving (Eq,Show,Storable)
 
 data CLKernelInfoRetval = KernelInfoRetvalString String | KernelInfoRetvalCLuint CLuint | KernelInfoRetvalContext Context | KernelInfoRetvalProgram Program
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLKernelWorkGroupInfoRetval = KernelWorkGroupInfoRetvalCLsizei CLsizei | KernelWorkGroupInfoRetvalCLsizeiList [CLsizei] | KernelWorkGroupInfoRetvalCLulong CLulong
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLImageInfoRetval = ImageInfoRetvalCLsizei CLsizei | ImageInfoRetvalImageFormat ImageFormat | ImageInfoRetvalPtr (Ptr ())
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLMemObjectInfoRetval = MemObjectInfoRetvalMemObjectType MemObjectType | MemObjectInfoRetvalMemFlags MemFlags | MemObjectInfoRetvalCLsizei CLsizei | MemObjectInfoRetvalPtr (Ptr ()) | MemObjectInfoRetvalCLuint CLuint | MemObjectInfoRetvalContext Context | MemObjectInfoRetvalMem Mem
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLEventInfoRetval = EventInfoRetvalCommandQueue CommandQueue | EventInfoRetvalContext Context| EventInfoRetvalCommandType CommandType | EventInfoRetvalCLint CLint | EventInfoRetvalCLuint CLuint
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLEventProfilingInfoRetval = EventProfilingInfoRetvalCLulong CLulong
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLContextInfoRetval = ContextInfoRetvalCLuint CLuint | ContextInfoRetvalDeviceIDList [DeviceID] | ContextInfoRetvalContextPropertiesList [ContextProperties]
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLCommandQueueInfoRetval = CommandQueueInfoRetvalContext Context | CommandQueueInfoRetvalDeviceID DeviceID | CommandQueueInfoRetvalCLuint CLuint | CommandQueueInfoRetvalCommandQueueProperties CommandQueueProperties
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLDeviceInfoRetval = DeviceInfoRetvalString String | DeviceInfoRetvalCLuint CLuint | DeviceInfoRetvalCLbool CLbool | DeviceInfoRetvalDeviceFPConfig DeviceFPConfig | DeviceInfoRetvalDeviceExecCapabilities DeviceExecCapabilities | DeviceInfoRetvalCLulong CLulong | DeviceInfoRetvalDeviceMemCacheType DeviceMemCacheType | DeviceInfoRetvalCLsizei CLsizei | DeviceInfoRetvalDeviceLocalMemType DeviceLocalMemType | DeviceInfoRetvalCLsizeiList [CLsizei] | DeviceInfoRetvalPlatformID PlatformID | DeviceInfoRetvalCommandQueueProperties CommandQueueProperties | DeviceInfoRetvalDeviceType DeviceType
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLProgramInfoRetval = ProgramInfoRetvalCLUint CLuint | ProgramInfoRetvalContext Context | ProgramInfoRetvalDeviceIDList [DeviceID] | ProgramInfoRetvalString String | ProgramInfoRetvalPtrList [Ptr ()] | ProgramInfoRetvalCLsizeiList [CLsizei]
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLProgramBuildInfoRetval = ProgramBuildInfoRetvalBuildStatus BuildStatus | ProgramBuildInfoRetvalString String
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLPlatformInfoRetval = PlatformInfoRetvalString String
-    deriving(Eq)
+    deriving(Eq,Show)
 data CLSamplerInfoRetval = SamplerInfoRetvalCLuint CLuint | SamplerInfoRetvalContext Context | SamplerInfoRetvalAddressingMode AddressingMode | SamplerInfoRetvalFilterMode FilterMode | SamplerInfoRetvalCLbool CLbool
-    deriving(Eq)
+    deriving(Eq,Show)
 
 type ContextCallback = (CString -> Ptr () -> CLsizei -> Ptr () -> IO ())
 type NativeKernelCallback = Ptr () -> IO ()
 type BuildProgramCallback = Program -> Ptr () -> IO ()
+
+data SomeCLException = forall e. (Exception e) => SomeCLException ErrorCode e
+    deriving (Typeable)
+
+instance Show SomeCLException where
+    showsPrec d (SomeCLException _ e) = showsPrec d e
+
+instance Exception SomeCLException
+
+newtype CLError = CLError ErrorCode
+    deriving (Eq,Typeable)
+
+instance Show CLError where
+    show (CLError e@(ErrorCode n)) =
+        "OpenCL error: " ++ clErrorMessage e ++ " (" ++ show n ++ ")"
+
+instance Exception CLError where
+    toException e@(CLError err) = toException (SomeCLException err e)
+    fromException e = do
+        SomeCLException err _ <- fromException e
+        return (CLError err)
+
+data CLBuildError = CLBuildError ErrorCode String
+    deriving (Eq,Typeable)
+
+instance Show CLBuildError where
+    show (CLBuildError e@(ErrorCode n) s) =
+        "OpenCL error: " ++ clErrorMessage e ++ ": " ++ s ++ " (" ++ show n ++ ")"
+
+instance Exception CLBuildError where
+    toException e@(CLBuildError err _) = toException (SomeCLException err e)
+    fromException e = do
+        SomeCLException _ e' <- fromException e
+        cast e'
+
+
+clErrorMessage :: ErrorCode -> String
+clErrorMessage e
+  | e == clSuccess = "Success"
+  | e == clDeviceNotFound = "Device not found"
+  | e == clDeviceNotAvailable = "Device not available"
+  | e == clCompilerNotAvailable = "Compiler not available"
+  | e == clMemObjectAllocationFailure = "Memory object allocation failure"
+  | e == clOutOfResources = "Out of resources"
+  | e == clOutOfHostMemory = "Out of host memory"
+  | e == clProfilingInfoNotAvailable = "Profiling information not available"
+  | e == clMemCopyOverlap = "Memory copy overlap"
+  | e == clImageFormatMismatch = "Image format mismatch"
+  | e == clImageFormatNotSupported = "Image format not supported"
+  | e == clMapFailure = "Map failure"
+  | e == clInvalidValue = "Invalid value"
+  | e == clInvalidDeviceType = "Invalid device type"
+  | e == clInvalidPlatform = "Invalid platform"
+  | e == clInvalidDevice = "Invalid device"
+  | e == clInvalidContext = "Invalid context"
+  | e == clInvalidQueueProperties = "Invalid queue properties"
+  | e == clInvalidCommandQueue = "Invalid command queue"
+  | e == clInvalidHostPtr = "Invalid host pointer"
+  | e == clInvalidImageFormatDescriptor = "Invalid image format descriptor"
+  | e == clInvalidImageSize = "Invalid image size"
+  | e == clInvalidSampler = "Invalid sampler"
+  | e == clInvalidBinary = "Invalid binary"
+  | e == clInvalidBuildOptions = "Invalid build options"
+  | e == clInvalidProgram = "Invalid program"
+  | e == clInvalidProgramExecutable = "Invalid program executable"
+  | e == clInvalidKernelName = "Invalid kernel name"
+  | e == clInvalidArgIndex = "Invalid argument index"
+  | e == clInvalidArgValue = "Invalid argument value"
+  | e == clInvalidArgSize = "Invalid argument size"
+  | e == clInvalidKernelArgs = "Invalid kernel arguments"
+  | e == clInvalidWorkDimension = "Invalid work dimension"
+  | e == clInvalidWorkGroupSize = "Invalid work group size"
+  | e == clInvalidWorkItemSize = "Invalid work item size"
+  | e == clInvalidGlobalOffset = "Invalid global offset"
+  | e == clInvalidEventWaitList = "Invalid event wait list"
+  | e == clInvalidEvent = "Invalid event"
+  | e == clInvalidOperation = "Invalid operation"
+  | e == clInvalidGLObject = "Invalid OpenGL object"
+  | e == clInvalidBufferSize = "Invalid buffer size"
+  | e == clInvalidMipLevel = "Invalid MIP level"
+  | otherwise = "Unknown error"
+
+clSuccess :: ErrorCode
+clSuccess = ErrorCode 0
+
+clDeviceNotFound :: ErrorCode
+clDeviceNotFound = ErrorCode (-1)
+
+clDeviceNotAvailable :: ErrorCode
+clDeviceNotAvailable = ErrorCode (-2)
+
+clCompilerNotAvailable :: ErrorCode
+clCompilerNotAvailable = ErrorCode (-3)
+
+clMemObjectAllocationFailure :: ErrorCode
+clMemObjectAllocationFailure = ErrorCode (-4)
+
+clOutOfResources :: ErrorCode
+clOutOfResources = ErrorCode (-5)
+
+clOutOfHostMemory :: ErrorCode
+clOutOfHostMemory = ErrorCode (-6)
+
+clProfilingInfoNotAvailable :: ErrorCode
+clProfilingInfoNotAvailable = ErrorCode (-7)
+
+clMemCopyOverlap :: ErrorCode
+clMemCopyOverlap = ErrorCode (-8)
+
+clImageFormatMismatch :: ErrorCode
+clImageFormatMismatch = ErrorCode (-9)
+
+clImageFormatNotSupported :: ErrorCode
+clImageFormatNotSupported = ErrorCode (-10)
+
+clBuildProgramFailure :: ErrorCode
+clBuildProgramFailure = ErrorCode (-11)
+
+clMapFailure :: ErrorCode
+clMapFailure = ErrorCode (-12)
+
+clInvalidValue :: ErrorCode
+clInvalidValue = ErrorCode (-30)
+
+clInvalidDeviceType :: ErrorCode
+clInvalidDeviceType = ErrorCode (-31)
+
+clInvalidPlatform :: ErrorCode
+clInvalidPlatform = ErrorCode (-32)
+
+clInvalidDevice :: ErrorCode
+clInvalidDevice = ErrorCode (-33)
+
+clInvalidContext :: ErrorCode
+clInvalidContext = ErrorCode (-34)
+
+clInvalidQueueProperties :: ErrorCode
+clInvalidQueueProperties = ErrorCode (-35)
+
+clInvalidCommandQueue :: ErrorCode
+clInvalidCommandQueue = ErrorCode (-36)
+
+clInvalidHostPtr :: ErrorCode
+clInvalidHostPtr = ErrorCode (-37)
+
+clInvalidMemObject :: ErrorCode
+clInvalidMemObject = ErrorCode (-38)
+
+clInvalidImageFormatDescriptor :: ErrorCode
+clInvalidImageFormatDescriptor = ErrorCode (-39)
+
+clInvalidImageSize :: ErrorCode
+clInvalidImageSize = ErrorCode (-40)
+
+clInvalidSampler :: ErrorCode
+clInvalidSampler = ErrorCode (-41)
+
+clInvalidBinary :: ErrorCode
+clInvalidBinary = ErrorCode (-42)
+
+clInvalidBuildOptions :: ErrorCode
+clInvalidBuildOptions = ErrorCode (-43)
+
+clInvalidProgram :: ErrorCode
+clInvalidProgram = ErrorCode (-44)
+
+clInvalidProgramExecutable :: ErrorCode
+clInvalidProgramExecutable = ErrorCode (-45)
+
+clInvalidKernelName :: ErrorCode
+clInvalidKernelName = ErrorCode (-46)
+
+clInvalidKernelDefinition :: ErrorCode
+clInvalidKernelDefinition = ErrorCode (-47)
+
+clInvalidKernel :: ErrorCode
+clInvalidKernel = ErrorCode (-48)
+
+clInvalidArgIndex :: ErrorCode
+clInvalidArgIndex = ErrorCode (-49)
+
+clInvalidArgValue :: ErrorCode
+clInvalidArgValue = ErrorCode (-50)
+
+clInvalidArgSize :: ErrorCode
+clInvalidArgSize = ErrorCode (-51)
+
+clInvalidKernelArgs :: ErrorCode
+clInvalidKernelArgs = ErrorCode (-52)
+
+clInvalidWorkDimension :: ErrorCode
+clInvalidWorkDimension = ErrorCode (-53)
+
+clInvalidWorkGroupSize :: ErrorCode
+clInvalidWorkGroupSize = ErrorCode (-54)
+
+clInvalidWorkItemSize :: ErrorCode
+clInvalidWorkItemSize = ErrorCode (-55)
+
+clInvalidGlobalOffset :: ErrorCode
+clInvalidGlobalOffset = ErrorCode (-56)
+
+clInvalidEventWaitList :: ErrorCode
+clInvalidEventWaitList = ErrorCode (-57)
+
+clInvalidEvent :: ErrorCode
+clInvalidEvent = ErrorCode (-58)
+
+clInvalidOperation :: ErrorCode
+clInvalidOperation = ErrorCode (-59)
+
+clInvalidGLObject :: ErrorCode
+clInvalidGLObject = ErrorCode (-60)
+
+clInvalidBufferSize :: ErrorCode
+clInvalidBufferSize = ErrorCode (-61)
+
+clInvalidMipLevel :: ErrorCode
+clInvalidMipLevel = ErrorCode (-62)
+
 
 clQueueOutOfOrderExecModeEnable :: CommandQueueProperties 
 clQueueOutOfOrderExecModeEnable = CommandQueueProperties (1`shiftL`0)
@@ -346,8 +571,11 @@ clProfilingCommandEnd  :: ProfilingInfo
 clProfilingCommandEnd  = ProfilingInfo 0x1283
 
 
-clFalse = 0 :: CLbool
-clTrue = 1 :: CLbool
+clFalse :: CLbool
+clFalse = 0
+
+clTrue :: CLbool
+clTrue = 1
 
 
 clDeviceTypeDefault :: DeviceType 
@@ -375,7 +603,8 @@ clContextDevices = ContextInfo 0x1081
 clContextProperties :: ContextInfo 
 clContextProperties = ContextInfo 0x1082
 
-clContextPlatform = 0x1084
+clContextPlatform :: ContextInfo
+clContextPlatform = ContextInfo 0x1084
 
 
 
@@ -637,7 +866,10 @@ clAddressClamp = AddressingMode 0x1132
 clAddressRepeat :: AddressingMode 
 clAddressRepeat = AddressingMode 0x1133
 
+clFilterNearest :: FilterMode
 clFilterNearest = FilterMode 0x1140
+
+clFilterLinear :: FilterMode
 clFilterLinear = FilterMode 0x1141
 
 

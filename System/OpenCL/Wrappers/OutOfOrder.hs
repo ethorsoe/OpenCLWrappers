@@ -9,16 +9,16 @@ import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
 import Foreign(withArray,peek,alloca)
 
-clEnqueueMarker :: CommandQueue -> IO (Either ErrorCode Event)
-clEnqueueMarker queue = alloca (\eventP ->
-    wrapError (raw_clEnqueueMarker queue eventP) >>=
-        maybe (fmap Right $ peek eventP) (return.Left))
+clEnqueueMarker :: CommandQueue -> IO Event
+clEnqueueMarker queue = alloca $ \eventP -> do
+    wrapError $ raw_clEnqueueMarker queue eventP
+    peek eventP
     
-clEnqueueWaitForEvents :: CommandQueue -> [Event] -> IO (Maybe ErrorCode)
+clEnqueueWaitForEvents :: CommandQueue -> [Event] -> IO ()
 clEnqueueWaitForEvents queue events =
-    withArray events (\eventsP ->
-        wrapError $ raw_clEnqueueWaitForEvents queue (fromIntegral num_events) eventsP)
+    withArray events $ \eventsP ->
+        wrapError $ raw_clEnqueueWaitForEvents queue (fromIntegral num_events) eventsP
     where num_events = length events
 
-clEnqueueBarrier :: CommandQueue -> IO (Maybe ErrorCode) 
+clEnqueueBarrier :: CommandQueue -> IO ()
 clEnqueueBarrier queue = wrapError $ raw_clEnqueueBarrier queue
