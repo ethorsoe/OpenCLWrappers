@@ -10,8 +10,6 @@ import Control.Applicative
 import Data.Maybe
 import Control.Monad.Cont
 import Control.Exception
-import Data.Bits((.|.))
-import Unsafe.Coerce(unsafeCoerce)
 
 wrapError :: IO CLint -> IO ()
 wrapError action = do
@@ -68,6 +66,3 @@ peekManyInfo f x size = do
 
 peekStringInfo :: (String -> b) -> ForeignPtr () -> IO b
 peekStringInfo f x = withForeignPtr x (\y -> fmap f (peekCString $ castPtr y))
-
-combineOr :: [a] -> a
-combineOr x = unsafeCoerce $ foldl (\x y -> x .|. unsafeCoerce y) (0 :: CLuint) x

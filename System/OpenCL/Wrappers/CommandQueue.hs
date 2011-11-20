@@ -6,6 +6,8 @@ module System.OpenCL.Wrappers.CommandQueue
     ,clSetCommandQueueProperty)
 where
 
+import Data.Bits
+import Data.List
 import System.OpenCL.Wrappers.Types
 import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Utils
@@ -15,9 +17,9 @@ import Foreign.Storable(peek)
 
 
 clCreateCommandQueue :: Context -> DeviceID -> [CommandQueueProperties] -> IO CommandQueue
-clCreateCommandQueue ctx devid props = let
-    CommandQueueProperties properties = combineOr props
-        in wrapErrorResult $ raw_clCreateCommandQueue ctx devid properties 
+clCreateCommandQueue ctx devid props =
+    wrapErrorResult $ raw_clCreateCommandQueue ctx devid properties
+    where properties = foldl' (.|.) 0 [ prop | CommandQueueProperties prop <- props ]
 
 clRetainCommandQueue :: CommandQueue -> IO ()
 clRetainCommandQueue queue = wrapError (raw_clRetainCommandQueue queue)
