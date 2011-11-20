@@ -8,8 +8,6 @@ import System.OpenCL.Wrappers.Types
 import Control.Applicative
 import Data.Maybe
 import Control.Monad.Cont
-import Data.Bits((.|.))
-import Unsafe.Coerce(unsafeCoerce)
 
 wrapError :: IO CLint -> IO (Maybe ErrorCode)
 wrapError thunk = thunk >>= \errcode -> if ErrorCode errcode == clSuccess then return Nothing else return . Just . ErrorCode $ errcode
@@ -67,6 +65,3 @@ peekManyInfo f x size = do
 
 peekStringInfo :: (String -> b) -> ForeignPtr () -> IO b
 peekStringInfo f x = withForeignPtr x (\y -> fmap f (peekCString $ castPtr y))
-
-combineOr :: [a] -> a
-combineOr x = unsafeCoerce $ foldl (\x y -> x .|. unsafeCoerce y) (0 :: CLuint) x
