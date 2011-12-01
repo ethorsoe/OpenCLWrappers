@@ -39,4 +39,5 @@ Library
   buildable: True
   hs-source-dirs: .
   other-modules: System.OpenCL.Wrappers.Utils
+  GHC-Options: -Wall
 
