@@ -54,6 +54,7 @@ clGetSupportedImageFormats ctx (MemFlags flags) (MemObjectType image_type) = all
               image_formatsN <- peekArray (fromIntegral num_image_formatsN*2) image_formats
               let sift (a:b:cs) = (ChannelOrder a,ChannelType b) : sift cs
                   sift [] = [] 
+                  sift _  = undefined --peekArray returned a list of uneven length
               return . Right $ sift image_formatsN )
           (return . Left) 
           err
