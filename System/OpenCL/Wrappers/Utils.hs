@@ -1,4 +1,3 @@
-{-# LANGUAGE ScopedTypeVariables #-}
 {-| OpenCL utility functions for improving FFI wrapper code. -}
 module System.OpenCL.Wrappers.Utils where
 
@@ -57,10 +56,12 @@ withCStringArray0 strings act = nest (map withCString strings)
 peekOneInfo :: Storable a => (a -> b) -> ForeignPtr () -> IO b
 peekOneInfo f x = withForeignPtr x (\y -> fmap f (peek $ castPtr y))
 
-peekManyInfo :: forall a b. Storable a => ([a] -> b) -> ForeignPtr () -> CLsizei -> IO b
-peekManyInfo f x size =
-    fmap f . withForeignPtr x $ \y ->
-        peekArray (fromIntegral size `div` sizeOf (undefined :: a)) $ castPtr y
+peekManyInfo :: Storable a => ([a] -> b) -> ForeignPtr () -> CLsizei -> IO b
+peekManyInfo f x size = do
+    c <- return undefined
+    a <- withForeignPtr x (\y -> (peekArray ( div (fromIntegral size) $ sizeOf c) $ castPtr y))
+    _ <- return (c:a)
+    return $ f a
 
 peekStringInfo :: (String -> b) -> ForeignPtr () -> IO b
 peekStringInfo f x = withForeignPtr x (\y -> fmap f (peekCString $ castPtr y))
