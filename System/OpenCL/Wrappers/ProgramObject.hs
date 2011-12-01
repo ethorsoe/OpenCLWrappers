@@ -14,7 +14,8 @@ import Control.Monad.Cont
 import System.OpenCL.Wrappers.Types
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
-import Foreign
+import Foreign(alloca,peek,withArray,Ptr,nullFunPtr)
+import Foreign.ForeignPtr.Unsafe(unsafeForeignPtrToPtr)
 import Foreign.C
 import Control.Applicative
 import Control.Exception
@@ -32,14 +33,11 @@ clCreateProgramWithSource ctx source_code = do
 
 clCreateProgramWithBinary :: Context -> [(DeviceID,SBS.ByteString)] -> IO Program
 clCreateProgramWithBinary context devbin_pair = 
-    allocaArray num_devices $ \lengths -> 
-    allocaArray num_devices $ \binaries ->
-    allocaArray num_devices $ \devices -> 
+    withArray (map (fromIntegral . SBS.length) bins) $ \lengths -> 
+    withArray (map (unsafeForeignPtrToPtr . bsPtr) bins) $ \binaries ->
+    withArray device_list $ \devices -> 
     alloca $ \binary_status ->
     alloca $ \errcode_ret -> do
-        pokeArray lengths (map (fromIntegral . SBS.length) bins)
-        pokeArray devices device_list
-        pokeArray binaries ((unsafeForeignPtrToPtr . bsPtr) `map` bins) 
         program <- raw_clCreateProgramWithBinary context (fromIntegral num_devices) devices lengths binaries binary_status errcode_ret
         errcode <- ErrorCode <$> peek errcode_ret
         binstatus <- ErrorCode <$> peek binary_status
@@ -58,9 +56,8 @@ clReleaseProgram prog = wrapError $ raw_clReleaseProgram prog
 
 clBuildProgram :: Program -> [DeviceID] -> String -> Maybe BuildProgramCallback -> Ptr () -> IO ()
 clBuildProgram program devices ops pfn_notifyF user_data = 
-    allocaArray num_devices $ \device_list -> 
+    withArray devices $ \device_list -> 
     withCString ops $ \options -> do 
-        pokeArray device_list devices
         pfn_notify <- maybe (return nullFunPtr) wrapBuildProgramCallback pfn_notifyF
         wrapError $ raw_clBuildProgram program (fromIntegral num_devices) device_list options pfn_notify user_data
     where num_devices = length devices   
