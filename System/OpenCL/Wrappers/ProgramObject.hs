@@ -14,7 +14,7 @@ import Control.Monad.Cont
 import System.OpenCL.Wrappers.Types
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
-import Foreign(alloca,peek,withArray,Ptr,nullFunPtr)
+import Foreign(alloca,peek,withArray,Ptr,nullFunPtr,nullPtr)
 import Foreign.ForeignPtr.Unsafe(unsafeForeignPtrToPtr)
 import Foreign.C
 import Control.Applicative
@@ -23,13 +23,10 @@ import qualified Data.ByteString as SBS
 import qualified Data.ByteString.Internal as SBS
 
 clCreateProgramWithSource :: Context -> String -> IO Program
-clCreateProgramWithSource ctx source_code = do
-    let count = length strings
-        strings = lines source_code
-        lengths = (fromIntegral . length) <$> strings
-    withArray lengths $ \lengthsP -> 
-        withCStringArray0 strings $ \stringsP -> 
-            wrapErrorResult $ raw_clCreateProgramWithSource ctx (fromIntegral count) stringsP lengthsP
+clCreateProgramWithSource ctx source =
+    withCString source $ \cSource ->
+        withArray [cSource] $ \sourcesP ->
+            wrapErrorResult $ raw_clCreateProgramWithSource ctx 1 sourcesP nullPtr
 
 clCreateProgramWithBinary :: Context -> [(DeviceID,SBS.ByteString)] -> IO Program
 clCreateProgramWithBinary context devbin_pair = 
