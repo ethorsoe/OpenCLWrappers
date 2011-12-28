@@ -21,13 +21,10 @@ import qualified Data.ByteString as SBS
 import qualified Data.ByteString.Internal as SBS
 
 clCreateProgramWithSource :: Context -> String -> IO (Either ErrorCode Program) 
-clCreateProgramWithSource ctx source_code = do
-    let count = length strings
-        strings = lines source_code
-        lengths = (fromIntegral . length) <$> strings
-    withArray lengths $ (\lengthsP -> 
-        withCStringArray0 strings $ (\stringsP -> 
-            wrapErrorEither $ raw_clCreateProgramWithSource ctx (fromIntegral count) stringsP lengthsP))   
+clCreateProgramWithSource ctx source =
+    withCString source $ \cSource ->
+        withArray [cSource] $ \sourcesP ->
+            wrapErrorEither $ raw_clCreateProgramWithSource ctx 1 sourcesP nullPtr
 
 clCreateProgramWithBinary :: Context -> [(DeviceID,SBS.ByteString)] ->  IO (Either ErrorCode Program)
 clCreateProgramWithBinary context devbin_pair = 
