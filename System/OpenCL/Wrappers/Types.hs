@@ -20,7 +20,6 @@ data Eventc = Eventc
 data Samplerc = Samplerc
 data ImageFormatc = ImageFormatc
 
-type ContextProperties = Ptr CLint
 type PlatformID = Ptr PlatformIDc
 type DeviceID = Ptr DeviceIDc
 type Context = Ptr Contextc
@@ -42,6 +41,8 @@ type ImageFormatp = Ptr ImageFormat
 type ImageFormat = (ChannelOrder,ChannelType)
 type ImageDims = (CLsizei,CLsizei,CLsizei)
 
+newtype ContextProperties = ContextProperties IntPtr
+    deriving (Eq,Storable,Show)
 newtype ChannelOrder = ChannelOrder CLuint
     deriving (Eq,Show)
 newtype ChannelType = ChannelType CLuint
@@ -603,9 +604,8 @@ clContextDevices = ContextInfo 0x1081
 clContextProperties :: ContextInfo 
 clContextProperties = ContextInfo 0x1082
 
-clContextPlatform :: ContextInfo
-clContextPlatform = ContextInfo 0x1084
-
+clContextPlatform :: ContextProperties
+clContextPlatform = ContextProperties 0x1084
 
 
 clKernelFunctionName  :: KernelInfo 
