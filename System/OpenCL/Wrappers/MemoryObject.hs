@@ -185,7 +185,7 @@ clEnqueueMapBuffer buffer blocking_map (MapFlags map_flags) offset cb command_qu
             event
         case ret of 
             Left err -> return (Left err)
-            Right ptr -> peek event >>= \event -> return $ Right (ptr,event)
+            Right ptr -> peek event >>= \event' -> return $ Right (ptr,event')
     where num_events_in_wait_list = length events
 
 clEnqueueMapImage :: Mem -> Bool -> MapFlags -> ImageDims -> ImageDims -> CommandQueue -> [Event] -> IO (Either ErrorCode (Ptr (),CLsizei,CLsizei,Event))
