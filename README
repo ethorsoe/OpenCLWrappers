@@ -1,8 +1,11 @@
-You must link explicitly to opencl library, name of which varies.
+You must link explicitly to opencl library, unless you build with the link flag.
 
-eg.
+Link library to OpenCL using cabal-install:
+	cabal configure --flags="link" && cabal build
+
+Link explicitly user created program when --flags="link" is not used to build the library:
 	ghc -lamdocl64 --make opencl.hs
 	ghc -lOpenCL --make opencl.hs
 
-Some examples can be found in http://users.tkk.fi/~jkarlson/codes/OpenCLWrappers/examples
+Some examples can be found in http://www.iki.fi/jekarl/codes/OpenCLWrappers/examples
 
