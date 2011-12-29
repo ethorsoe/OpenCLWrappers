@@ -4,7 +4,6 @@ module System.OpenCL.Wrappers.DeviceInfo
 where
 
 import System.OpenCL.Wrappers.Types
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
 

@@ -9,7 +9,6 @@ where
 import Data.Bits
 import Data.List
 import System.OpenCL.Wrappers.Types
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
 import Foreign.Marshal.Alloc(alloca)

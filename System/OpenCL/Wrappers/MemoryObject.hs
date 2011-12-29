@@ -21,13 +21,11 @@ module System.OpenCL.Wrappers.MemoryObject
 where
 
 import System.OpenCL.Wrappers.Types
-import System.OpenCL.Wrappers.Errors
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
 import Foreign
 import Control.Applicative
 import Data.Maybe
-import Data.Bits
 
 
 clCreateBuffer :: Context -> MemFlags -> CLsizei -> Ptr () -> IO (Either ErrorCode Mem)
