@@ -18,7 +18,7 @@ clWaitForEvents evts = withArray evts (\eventP -> wrapError $ raw_clWaitForEvent
                             
 clGetEventInfo :: Event -> EventInfo -> IO (Either ErrorCode CLEventInfoRetval)
 clGetEventInfo obj (EventInfo param_name) = wrapGetInfo (raw_clGetEventInfo obj param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (EventInfo param_name) in case () of 
+    either (return.Left) (\(x,_) -> fmap Right $ let c = (EventInfo param_name) in case () of 
         ()
             | c == clEventCommandQueue           -> peekOneInfo EventInfoRetvalCommandQueue x
             | c == clEventCommandType            -> peekOneInfo EventInfoRetvalCommandType x
@@ -33,7 +33,7 @@ clReleaseEvent evt = wrapError $ raw_clReleaseEvent evt
 
 clGetEventProfilingInfo :: Event -> ProfilingInfo -> IO (Either ErrorCode CLEventProfilingInfoRetval)
 clGetEventProfilingInfo obj (ProfilingInfo param_name) = wrapGetInfo (raw_clGetEventProfilingInfo obj param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (ProfilingInfo param_name) in case () of 
+    either (return.Left) (\(x,_) -> fmap Right $ let c = (ProfilingInfo param_name) in case () of 
         ()
             | c == clProfilingCommandQueued -> peekOneInfo EventProfilingInfoRetvalCLulong x
             | c == clProfilingCommandSubmit -> peekOneInfo EventProfilingInfoRetvalCLulong x

@@ -45,7 +45,7 @@ clSetKernelArg kernel arg_index arg_size arg_value =
 
 clGetKernelInfo :: Kernel -> KernelInfo -> IO (Either ErrorCode CLKernelInfoRetval)
 clGetKernelInfo kernel (KernelInfo param_name) = (wrapGetInfo $ raw_clGetKernelInfo kernel param_name) >>= 
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (KernelInfo param_name) in case () of 
+    either (return.Left) (\(x,_) -> fmap Right $ let c = (KernelInfo param_name) in case () of 
         ()
             | c == clKernelFunctionName   -> peekStringInfo KernelInfoRetvalString x
             | c == clKernelNumArgs        -> peekOneInfo KernelInfoRetvalCLuint x

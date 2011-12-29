@@ -23,7 +23,7 @@ clReleaseSampler sampler = wrapError $ raw_clReleaseSampler sampler
 
 clGetSamplerInfo :: Sampler -> SamplerInfo -> IO (Either ErrorCode CLSamplerInfoRetval)
 clGetSamplerInfo sampler (SamplerInfo param_name) = (wrapGetInfo $ raw_clGetSamplerInfo sampler param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (SamplerInfo param_name) in case () of 
+    either (return.Left) (\(x,_) -> fmap Right $ let c = (SamplerInfo param_name) in case () of 
         ()
             | c == clSamplerReferenceCount   -> peekOneInfo SamplerInfoRetvalCLuint x
             | c == clSamplerContext          -> peekOneInfo SamplerInfoRetvalContext x

@@ -28,7 +28,7 @@ clReleaseCommandQueue queue = wrapError (raw_clReleaseCommandQueue queue)
 
 clGetCommandQueueInfo :: CommandQueue -> CommandQueueInfo -> IO (Either ErrorCode CLCommandQueueInfoRetval)
 clGetCommandQueueInfo ctx (CommandQueueInfo param_name) = wrapGetInfo (raw_clGetCommandQueueInfo ctx param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (CommandQueueInfo param_name) in case () of 
+    either (return.Left) (\(x,_) -> fmap Right $ let c = (CommandQueueInfo param_name) in case () of 
         ()
             | c == clQueueContext        -> peekOneInfo CommandQueueInfoRetvalContext x
             | c == clQueueDevice         -> peekOneInfo CommandQueueInfoRetvalDeviceID x

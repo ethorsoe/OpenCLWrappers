@@ -60,7 +60,7 @@ clGetSupportedImageFormats ctx (MemFlags flags) (MemObjectType image_type) = all
 
 clGetMemObjectInfo :: Mem -> MemInfo -> IO (Either ErrorCode CLMemObjectInfoRetval)
 clGetMemObjectInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetMemObjectInfo mem param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (MemInfo param_name) in case () of 
+    either (return.Left) (\(x,_) -> fmap Right $ let c = (MemInfo param_name) in case () of 
         ()
             | c == clMemType           -> peekOneInfo MemObjectInfoRetvalMemObjectType x
             | c == clMemFlags          -> peekOneInfo MemObjectInfoRetvalMemFlags x
@@ -72,7 +72,7 @@ clGetMemObjectInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetMemObjectI
 
 clGetImageInfo :: Mem -> MemInfo -> IO (Either ErrorCode CLImageInfoRetval)
 clGetImageInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetImageInfo mem param_name) >>=
-    either (return.Left) (\(x,size) -> fmap Right $ let c = (MemInfo param_name) in case () of 
+    either (return.Left) (\(x,_) -> fmap Right $ let c = (MemInfo param_name) in case () of 
         ()
             | c == clImageElementSize -> peekOneInfo ImageInfoRetvalCLsizei x
             | c == clImageRowPitch    -> peekOneInfo ImageInfoRetvalCLsizei x

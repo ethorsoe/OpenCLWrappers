@@ -61,7 +61,7 @@ peekManyInfo :: Storable a => ([a] -> b) -> ForeignPtr () -> CLsizei -> IO b
 peekManyInfo f x size = do
     c <- return undefined
     a <- withForeignPtr x (\y -> (peekArray ( div (fromIntegral size) $ sizeOf c) $ castPtr y))
-    return (c:a)
+    _ <- return (c:a)
     return $ f a
 
 peekStringInfo :: (String -> b) -> ForeignPtr () -> IO b
