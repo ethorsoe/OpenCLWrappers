@@ -88,7 +88,7 @@ foreign import ccall "clRetainCommandQueue" raw_clRetainCommandQueue :: CommandQ
 foreign import ccall "clReleaseCommandQueue" raw_clReleaseCommandQueue :: CommandQueue -> IO CLint
 foreign import ccall "clGetCommandQueueInfo" raw_clGetCommandQueueInfo :: CommandQueue -> CLuint -> CLsizei -> Ptr () -> Ptr CLsizei -> IO CLint
 foreign import ccall "clSetCommandQueueProperty" raw_clSetCommandQueueProperty :: CommandQueue -> CLbitfield -> CLbool -> Ptr CLbitfield -> IO CLint
-foreign import ccall "clCreateContext" raw_clCreateContext :: Ptr (Ptr CLint) -> CLuint -> Ptr DeviceID -> FunPtr ContextCallback -> Ptr () -> Ptr CLint -> IO Context
+foreign import ccall "clCreateContext" raw_clCreateContext :: Ptr ContextProperties -> CLuint -> Ptr DeviceID -> FunPtr ContextCallback -> Ptr () -> Ptr CLint -> IO Context
 foreign import ccall "clCreateContextFromType" raw_clCreateContextFromType :: Ptr ContextProperties -> CLbitfield -> FunPtr ContextCallback -> Ptr a -> Ptr CLint -> IO Context
 foreign import ccall "clRetainContext" raw_clRetainContext :: Context -> IO CLint
 foreign import ccall "clReleaseContext" raw_clReleaseContext :: Context -> IO CLint

@@ -10,19 +10,19 @@ where
 import System.OpenCL.Wrappers.Types
 import System.OpenCL.Wrappers.Utils
 import System.OpenCL.Wrappers.Raw
-import Foreign.Ptr(Ptr, nullPtr, nullFunPtr)
+import Foreign.Ptr(Ptr, nullPtr, nullFunPtr,ptrToIntPtr)
 import Foreign.Marshal.Array(withArray)
 
 
 clCreateContext :: [ContextProperties] -> [DeviceID] -> (Maybe ContextCallback) -> Ptr () -> IO (Either ErrorCode Context)
-clCreateContext properties devices pfn_notify user_dat =
-    withArrayNull0 nullPtr properties $ \propertiesP -> withArray devices $ \devicesP -> do
+clCreateContext props devices pfn_notify user_dat =
+    withArrayNull0 (ContextProperties$ptrToIntPtr nullPtr) props $ \propertiesP -> withArray devices $ \devicesP -> do
         fptr <- maybe (return nullFunPtr) wrapContextCallback pfn_notify
-        wrapErrorEither $ raw_clCreateContext propertiesP (fromIntegral devicesN) devicesP fptr user_dat             
+        wrapErrorEither $ raw_clCreateContext propertiesP (fromIntegral devicesN) devicesP fptr user_dat 
     where devicesN = length devices
           
 clCreateContextFromType :: [ContextProperties] -> DeviceType -> (Maybe ContextCallback) -> Ptr () -> IO (Either ErrorCode Context)
-clCreateContextFromType properties (DeviceType device_type) pfn_notify user_data = withArrayNull0 nullPtr properties $ \propertiesP -> do
+clCreateContextFromType props (DeviceType device_type) pfn_notify user_data = withArrayNull0 (ContextProperties$ptrToIntPtr nullPtr) props $ \propertiesP -> do
     fptr <- maybe (return nullFunPtr) wrapContextCallback pfn_notify
     wrapErrorEither $ raw_clCreateContextFromType propertiesP device_type fptr user_data
     
