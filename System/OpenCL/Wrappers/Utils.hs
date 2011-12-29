@@ -39,6 +39,7 @@ wrapGetNumElements raw_Fn = alloca (\value_size_ret ->
                     maybe (fmap Right $ peekArray (fromIntegral retsize) param_dataP) (return.Left)))
             (return.Left))
 
+withArrayNull0 :: Storable a => a -> [a] -> (Ptr a -> IO b) -> IO b
 withArrayNull0 a as = withArrayNull $ as ++ [a]
 
 withArrayNull :: Storable a => [a] -> (Ptr a -> IO b) -> IO b

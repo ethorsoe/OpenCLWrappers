@@ -137,6 +137,8 @@ clInvalidGLObject = ErrorCode (-60)
 clInvalidBufferSize :: ErrorCode
 
 clInvalidBufferSize = ErrorCode (-61)
+
+clInvalidMipLevel :: ErrorCode
 clInvalidMipLevel = ErrorCode (-62)
 
 

@@ -20,6 +20,7 @@ import Control.Applicative
 import Data.Maybe
 
 
+clCreateKernel :: Program -> String -> IO (Either ErrorCode Kernel)
 clCreateKernel program init_name = withCString init_name (\x -> wrapErrorEither $ raw_clCreateKernel program x)
 
 clCreateKernelsInProgram :: Program -> CLuint -> IO (Either ErrorCode [Kernel])

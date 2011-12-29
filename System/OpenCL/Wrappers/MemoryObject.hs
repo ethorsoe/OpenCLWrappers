@@ -89,7 +89,7 @@ enqueue fn queue events = alloca $ \event -> withArrayNull events $ \event_wait_
         else return (Left . fromJust $ err)
     where events_in_wait_list = length events
     
-    
+clEnqueueReadBuffer :: Mem -> Bool -> CLsizei -> CLsizei -> Ptr () -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)    
 clEnqueueReadBuffer buffer blocking_read offset cb ptr = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> 
                 raw_clEnqueueReadBuffer 
@@ -103,22 +103,24 @@ clEnqueueReadBuffer buffer blocking_read offset cb ptr =
                     event_wait_list 
                     event)
                             
-
+clEnqueueWriteBuffer :: Mem -> Bool -> CLsizei -> CLsizei -> Ptr () -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)
 clEnqueueWriteBuffer buffer blocking_write offset cb ptr = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> 
                 raw_clEnqueueWriteBuffer command_queue buffer (if blocking_write then clTrue else clFalse) offset cb ptr num_events_in_wait_list event_wait_list event)  
 
-
+clEnqueueCopyBuffer :: Mem -> Mem -> CLsizei -> CLsizei -> CLsizei -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)
 clEnqueueCopyBuffer src_buffer dst_buffer src_offset dst_offset cb = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> 
                 raw_clEnqueueCopyBuffer command_queue src_buffer dst_buffer src_offset dst_offset cb num_events_in_wait_list event_wait_list event)                       
 
+clEnqueueReadImage :: Mem -> Bool -> (CLsizei, CLsizei, CLsizei) -> (CLsizei, CLsizei, CLsizei) -> CLsizei -> CLsizei -> Ptr () -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)
 clEnqueueReadImage image blocking_read (oa,ob,oc) (ra,rb,rc) row_pitch slice_pitch ptr = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> allocaArray 3 $ \origin -> allocaArray 3 $ \region -> do 
                 pokeArray region [ra,rb,rc]
                 pokeArray origin [oa,ob,oc]
                 raw_clEnqueueReadImage command_queue image (if blocking_read then clTrue else clFalse) origin region row_pitch slice_pitch ptr num_events_in_wait_list event_wait_list event) 
-                    
+
+clEnqueueWriteImage :: Mem -> Bool -> (CLsizei, CLsizei, CLsizei) -> (CLsizei, CLsizei, CLsizei) -> CLsizei -> CLsizei -> Ptr () -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)
 clEnqueueWriteImage image blocking_read (oa,ob,oc) (ra,rb,rc) row_pitch slice_pitch ptr = 
     enqueue (\command_queue num_events_in_wait_list event_wait_list event -> allocaArray 3 $ \origin -> allocaArray 3 $ \region -> do 
                 pokeArray region [ra,rb,rc]
@@ -217,7 +219,7 @@ clEnqueueMapImage buffer blocking_map (MapFlags map_flags) (oa,ob,oc) (ra,rb,rc)
                 return  $ Right (ptr,image_row_pitch',image_slice_pitch', event') 
         where num_events_in_wait_list = length events
                   
-
+clEnqueueUnmapMemObject :: Mem -> Ptr () -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)
 clEnqueueUnmapMemObject mem mapped_ptr = enqueue
     (\command_queue num_events_in_wait_list event_wait_list event -> 
         raw_clEnqueueUnmapMemObject command_queue mem mapped_ptr num_events_in_wait_list event_wait_list event)

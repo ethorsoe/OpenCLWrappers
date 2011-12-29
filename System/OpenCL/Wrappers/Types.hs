@@ -345,8 +345,10 @@ clProfilingCommandStart = ProfilingInfo 0x1282
 clProfilingCommandEnd  :: ProfilingInfo 
 clProfilingCommandEnd  = ProfilingInfo 0x1283
 
-
+clFalse :: CLbool
 clFalse = 0 :: CLbool
+
+clTrue :: CLbool
 clTrue = 1 :: CLbool
 
 
@@ -637,7 +639,10 @@ clAddressClamp = AddressingMode 0x1132
 clAddressRepeat :: AddressingMode 
 clAddressRepeat = AddressingMode 0x1133
 
+clFilterNearest :: FilterMode
 clFilterNearest = FilterMode 0x1140
+
+clFilterLinear :: FilterMode
 clFilterLinear = FilterMode 0x1141
 
 
