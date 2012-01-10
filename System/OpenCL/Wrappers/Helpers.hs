@@ -13,6 +13,7 @@ import Prelude hiding(catch)
 import System.OpenCL.Wrappers.Kernel
 import System.OpenCL.Wrappers.Types
 import System.OpenCL.Wrappers.ProgramObject
+import System.OpenCL.Wrappers.EventObject
 import System.OpenCL.Wrappers.FlushFinish
 import Foreign.Marshal
 import Foreign.Storable
@@ -35,7 +36,8 @@ pushKernelParams _ _ _ = return ()
 
 syncKernelFun :: forall b. Storable b => CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [b] -> IO ()
 syncKernelFun _ kernel queue a b [] = do
-    _ <- clEnqueueNDRangeKernel queue kernel a b []
+    clEnqueueNDRangeKernel queue kernel a b [] >>=
+        clReleaseEvent
     clFinish queue
 syncKernelFun argNum kernel queue a b (x:xs) = do
     withArray [x] $ \y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)
