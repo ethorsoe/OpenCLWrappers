@@ -4,7 +4,9 @@ module System.OpenCL.Wrappers.Helpers
     (createSyncKernel
     ,createAsyncKernelWithParams
     ,buildProgram
-    ,pushKernelParams)
+    ,pushKernelParams
+    ,pushKernelParams'
+    ,KernelParameter(..))
 where
 
 import System.OpenCL.Wrappers.Kernel
@@ -15,7 +17,15 @@ import Foreign.Marshal
 import Foreign.Storable
 import Foreign.Ptr
 
-pushKernelParams :: forall b. Storable b => Kernel -> CLuint -> [b] -> IO (Maybe ErrorCode)
+data KernelParameter = forall s. Storable s => KParam s
+
+pushKernelParams' :: Kernel -> CLuint -> [KernelParameter] -> IO (Maybe ErrorCode)
+pushKernelParams' kernel argNum ((KParam x):xs) = 
+    withArray [x] (\y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)) >>=
+        maybe (pushKernelParams' kernel (argNum + 1) xs) (return.Just)
+pushKernelParams' _ _ _ = return Nothing
+
+pushKernelParams :: Storable b => Kernel -> CLuint -> [b] -> IO (Maybe ErrorCode)
 pushKernelParams kernel argNum (x:xs) = 
     withArray [x] (\y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)) >>=
         maybe (pushKernelParams kernel (argNum + 1) xs) (return.Just)
