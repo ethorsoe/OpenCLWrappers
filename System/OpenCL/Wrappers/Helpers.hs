@@ -12,6 +12,7 @@ where
 import System.OpenCL.Wrappers.Kernel
 import System.OpenCL.Wrappers.Types
 import System.OpenCL.Wrappers.ProgramObject
+import System.OpenCL.Wrappers.EventObject
 import System.OpenCL.Wrappers.FlushFinish
 import Foreign.Marshal
 import Foreign.Storable
@@ -34,7 +35,8 @@ pushKernelParams _ _ _ = return Nothing
 syncKernelFun :: forall b. Storable b => CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [b] -> IO (Maybe ErrorCode)
 syncKernelFun _ kernel queue a b [] =
         clEnqueueNDRangeKernel queue kernel a b [] >>=
-            either (return.Just) (\_ -> clFinish queue >>= maybe (return Nothing) (return.Just))
+            either (return.Just) (\ev -> clReleaseEvent ev >>=
+                maybe (clFinish queue >>= maybe (return Nothing) (return.Just)) (return.Just))
 syncKernelFun argNum kernel queue a b (x:xs) =
         withArray [x] (\y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)) >>=
             maybe (syncKernelFun (argNum + 1) kernel queue a b xs) (return.Just)
