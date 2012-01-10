@@ -29,5 +29,6 @@ clGetSamplerInfo sampler (SamplerInfo param_name) = (wrapGetInfo $ raw_clGetSamp
             | c == clSamplerContext          -> peekOneInfo SamplerInfoRetvalContext x
             | c == clSamplerAddressingMode   -> peekOneInfo SamplerInfoRetvalAddressingMode x
             | c == clSamplerFilterMode       -> peekOneInfo SamplerInfoRetvalFilterMode x
-            | c == clSamplerNormalizedCoords -> peekOneInfo SamplerInfoRetvalCLbool x)
+            | c == clSamplerNormalizedCoords -> peekOneInfo SamplerInfoRetvalCLbool x
+            | otherwise                      -> undefined)
 

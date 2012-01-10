@@ -66,4 +66,5 @@ clGetDeviceInfo obj (DeviceInfo param_name) = wrapGetInfo (raw_clGetDeviceInfo o
             | c == clDeviceVendor                     -> peekStringInfo DeviceInfoRetvalString x
             | c == clDeviceVendorID                   -> peekOneInfo DeviceInfoRetvalCLuint x
             | c == clDeviceVersion                    -> peekStringInfo DeviceInfoRetvalString x
-            | c == clDriverVersion                    -> peekStringInfo DeviceInfoRetvalString x)
+            | c == clDriverVersion                    -> peekStringInfo DeviceInfoRetvalString x
+            | otherwise                               -> undefined)

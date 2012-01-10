@@ -68,7 +68,8 @@ clGetMemObjectInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetMemObjectI
             | c == clMemHostPtr        -> peekOneInfo MemObjectInfoRetvalPtr x
             | c == clMemMapCount       -> peekOneInfo MemObjectInfoRetvalCLuint x
             | c == clMemReferenceCount -> peekOneInfo MemObjectInfoRetvalCLuint x
-            | c == clMemContext        -> peekOneInfo MemObjectInfoRetvalContext x)
+            | c == clMemContext        -> peekOneInfo MemObjectInfoRetvalContext x
+            | otherwise                -> undefined)
 
 clGetImageInfo :: Mem -> MemInfo -> IO (Either ErrorCode CLImageInfoRetval)
 clGetImageInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetImageInfo mem param_name) >>=
@@ -79,7 +80,8 @@ clGetImageInfo mem (MemInfo param_name) = (wrapGetInfo $ raw_clGetImageInfo mem 
             | c == clImageSlicePitch  -> peekOneInfo ImageInfoRetvalCLsizei x
             | c == clImageWidth       -> peekOneInfo ImageInfoRetvalCLsizei x
             | c == clImageHeight      -> peekOneInfo ImageInfoRetvalCLsizei x
-            | c == clImageDepth       -> peekOneInfo ImageInfoRetvalCLsizei x)
+            | c == clImageDepth       -> peekOneInfo ImageInfoRetvalCLsizei x
+            | otherwise               -> undefined)
         
 enqueue :: (CommandQueue -> CLuint -> Ptr Event -> Ptr Event -> IO CLint) -> CommandQueue -> [Event] -> IO (Either ErrorCode Event)      
 enqueue fn queue events = alloca $ \event -> withArrayNull events $ \event_wait_list -> do

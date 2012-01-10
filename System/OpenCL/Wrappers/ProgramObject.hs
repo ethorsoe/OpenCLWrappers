@@ -71,7 +71,8 @@ clGetProgramInfo program (ProgramInfo param_name) = (wrapGetInfo $ raw_clGetProg
             | c == clProgramDevices        -> peekManyInfo ProgramInfoRetvalDeviceIDList x size
             | c == clProgramSource         -> peekStringInfo ProgramInfoRetvalString x
             | c == clProgramBinarySizes    -> peekManyInfo ProgramInfoRetvalCLsizeiList x size
-            | c == clProgramBinaries       -> peekManyInfo ProgramInfoRetvalPtrList x size )
+            | c == clProgramBinaries       -> peekManyInfo ProgramInfoRetvalPtrList x size
+            | otherwise                    -> undefined)
 
 clGetProgramBuildInfo :: Program -> DeviceID -> ProgramBuildInfo -> IO (Either ErrorCode CLProgramBuildInfoRetval)
 clGetProgramBuildInfo program devID (ProgramBuildInfo param_name) = (wrapGetInfo $ raw_clGetProgramBuildInfo program devID param_name) >>=

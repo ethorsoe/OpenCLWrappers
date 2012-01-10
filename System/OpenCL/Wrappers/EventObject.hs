@@ -23,7 +23,8 @@ clGetEventInfo obj (EventInfo param_name) = wrapGetInfo (raw_clGetEventInfo obj 
             | c == clEventCommandQueue           -> peekOneInfo EventInfoRetvalCommandQueue x
             | c == clEventCommandType            -> peekOneInfo EventInfoRetvalCommandType x
             | c == clEventCommandExecutionStatus -> peekOneInfo EventInfoRetvalCLint x
-            | c == clEventReferenceCount         -> peekOneInfo EventInfoRetvalCLuint x )
+            | c == clEventReferenceCount         -> peekOneInfo EventInfoRetvalCLuint x
+            | otherwise                          -> undefined)
 
 clRetainEvent :: Event -> IO (Maybe ErrorCode)
 clRetainEvent evt = wrapError $ raw_clRetainEvent evt
@@ -38,4 +39,5 @@ clGetEventProfilingInfo obj (ProfilingInfo param_name) = wrapGetInfo (raw_clGetE
             | c == clProfilingCommandQueued -> peekOneInfo EventProfilingInfoRetvalCLulong x
             | c == clProfilingCommandSubmit -> peekOneInfo EventProfilingInfoRetvalCLulong x
             | c == clProfilingCommandStart  -> peekOneInfo EventProfilingInfoRetvalCLulong x
-            | c == clProfilingCommandEnd    -> peekOneInfo EventProfilingInfoRetvalCLulong x )
+            | c == clProfilingCommandEnd    -> peekOneInfo EventProfilingInfoRetvalCLulong x
+            | otherwise                     -> undefined)

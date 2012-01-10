@@ -33,7 +33,8 @@ clGetCommandQueueInfo ctx (CommandQueueInfo param_name) = wrapGetInfo (raw_clGet
             | c == clQueueContext        -> peekOneInfo CommandQueueInfoRetvalContext x
             | c == clQueueDevice         -> peekOneInfo CommandQueueInfoRetvalDeviceID x
             | c == clQueueReferenceCount -> peekOneInfo CommandQueueInfoRetvalCLuint x
-            | c == clQueueProperties     -> peekOneInfo CommandQueueInfoRetvalCommandQueueProperties x)
+            | c == clQueueProperties     -> peekOneInfo CommandQueueInfoRetvalCommandQueueProperties x
+            | otherwise                  -> undefined)
 
 {-# DEPRECATED clSetCommandQueueProperty "Deprecated in C api" #-}
 clSetCommandQueueProperty :: CommandQueue -> CommandQueueProperties -> Bool -> IO (Either ErrorCode CommandQueueProperties)

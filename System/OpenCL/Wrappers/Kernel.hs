@@ -51,7 +51,8 @@ clGetKernelInfo kernel (KernelInfo param_name) = (wrapGetInfo $ raw_clGetKernelI
             | c == clKernelNumArgs        -> peekOneInfo KernelInfoRetvalCLuint x
             | c == clKernelReferenceCount -> peekOneInfo KernelInfoRetvalCLuint x
             | c == clKernelContext        -> peekOneInfo KernelInfoRetvalContext x
-            | c == clKernelProgram        -> peekOneInfo KernelInfoRetvalProgram x)
+            | c == clKernelProgram        -> peekOneInfo KernelInfoRetvalProgram x
+            | otherwise                   -> undefined)
 
 clGetKernelWorkGroupInfo :: Kernel -> DeviceID -> KernelWorkGroupInfo -> IO (Either ErrorCode CLKernelWorkGroupInfoRetval)
 clGetKernelWorkGroupInfo kernel device (KernelWorkGroupInfo param_name) = (wrapGetInfo $ raw_clGetKernelWorkGroupInfo kernel device param_name) >>=
@@ -59,7 +60,8 @@ clGetKernelWorkGroupInfo kernel device (KernelWorkGroupInfo param_name) = (wrapG
         ()
             | c == clKernelWorkGroupSize        -> peekOneInfo KernelWorkGroupInfoRetvalCLsizei x
             | c == clKernelCompileWorkGroupSize -> peekManyInfo KernelWorkGroupInfoRetvalCLsizeiList x size
-            | c == clKernelLocalMemSize         -> peekOneInfo KernelWorkGroupInfoRetvalCLulong x)
+            | c == clKernelLocalMemSize         -> peekOneInfo KernelWorkGroupInfoRetvalCLulong x
+            | otherwise                         -> undefined)
 
 clEnqueueNDRangeKernel :: CommandQueue -> Kernel -> [CLsizei] -> [CLsizei] -> [Event] -> IO (Either ErrorCode Event) 
 clEnqueueNDRangeKernel queue kernel global_work_sizeL local_work_sizeL event_wait_listL = 

@@ -38,4 +38,5 @@ clGetContextInfo ctx (ContextInfo param_name) = wrapGetInfo (raw_clGetContextInf
         ()
             | c == clContextReferenceCount -> peekOneInfo ContextInfoRetvalCLuint x
             | c == clContextDevices        -> peekManyInfo ContextInfoRetvalDeviceIDList x size
-            | c == clContextProperties     -> peekManyInfo ContextInfoRetvalContextPropertiesList x size )
+            | c == clContextProperties     -> peekManyInfo ContextInfoRetvalContextPropertiesList x size
+            | otherwise                    -> undefined)
