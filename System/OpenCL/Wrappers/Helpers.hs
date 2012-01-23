@@ -35,13 +35,11 @@ pushKernelParams kernel argNum (x:xs) =
 pushKernelParams _ _ _ = return Nothing
 
 syncKernelFun :: forall b. Storable b => CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [b] -> IO (Maybe ErrorCode)
-syncKernelFun _ kernel queue a b [] =
-        clEnqueueNDRangeKernel queue kernel a b [] >>=
+syncKernelFun argNum kernel queue a b xs =
+    pushKernelParams kernel argNum xs >>=
+        maybe (clEnqueueNDRangeKernel queue kernel a b [] >>=
             either (return.Just) (\ev -> clReleaseEvent ev >>=
-                maybe (clFinish queue >>= maybe (return Nothing) (return.Just)) (return.Just))
-syncKernelFun argNum kernel queue a b (x:xs) =
-        withArray [x] (\y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)) >>=
-            maybe (syncKernelFun (argNum + 1) kernel queue a b xs) (return.Just)
+                maybe (clFinish queue >>= maybe (return Nothing) (return.Just)) (return.Just))) (return.Just)
 
 createSyncKernel :: forall b. Storable b => Program -> CommandQueue -> String -> [Int] -> [Int] -> IO (Either ErrorCode ([b] -> IO (Maybe ErrorCode)))
 createSyncKernel program queue initFun globalWorkRange localWorkRange =
