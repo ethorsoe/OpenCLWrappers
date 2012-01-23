@@ -5,7 +5,6 @@ module System.OpenCL.Wrappers.Helpers
     ,createAsyncKernelWithParams
     ,buildProgram
     ,pushKernelParams
-    ,pushKernelParams'
     ,KernelParameter(..))
 where
 
@@ -22,33 +21,25 @@ import Control.Exception
 
 data KernelParameter = forall s. Storable s => KParam s
 
-pushKernelParams' :: Kernel -> CLuint -> [KernelParameter] -> IO ()
-pushKernelParams' kernel argNum ((KParam x):xs) = do
-    withArray [x] $ \y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)
-    pushKernelParams' kernel (argNum + 1) xs
-pushKernelParams' _ _ _ = return ()
-
-pushKernelParams :: Storable b => Kernel -> CLuint -> [b] -> IO ()
-pushKernelParams kernel argNum (x:xs) = do
+pushKernelParams :: Kernel -> CLuint -> [KernelParameter] -> IO ()
+pushKernelParams kernel argNum ((KParam x):xs) = do
     withArray [x] $ \y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)
     pushKernelParams kernel (argNum + 1) xs
 pushKernelParams _ _ _ = return ()
 
-syncKernelFun :: forall b. Storable b => CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [b] -> IO ()
-syncKernelFun _ kernel queue a b [] = do
+syncKernelFun :: CLuint -> Kernel -> CommandQueue -> [CLsizei] -> [CLsizei] -> [KernelParameter] -> IO ()
+syncKernelFun argNum kernel queue a b xs = do
+    pushKernelParams kernel argNum xs
     clEnqueueNDRangeKernel queue kernel a b [] >>=
         clReleaseEvent
     clFinish queue
-syncKernelFun argNum kernel queue a b (x:xs) = do
-    withArray [x] $ \y -> clSetKernelArg kernel argNum (fromIntegral.sizeOf $ x) (castPtr y)
-    syncKernelFun (argNum + 1) kernel queue a b xs
 
-createSyncKernel :: forall b. Storable b => Program -> CommandQueue -> String -> [Int] -> [Int] -> IO ([b] -> IO ())
+createSyncKernel :: Program -> CommandQueue -> String -> [Int] -> [Int] -> IO ([KernelParameter] -> IO ())
 createSyncKernel program queue initFun globalWorkRange localWorkRange = do
     k <- clCreateKernel program initFun
     return $ syncKernelFun 0 k queue (map fromIntegral globalWorkRange) (map fromIntegral localWorkRange)
 
-createAsyncKernelWithParams :: forall b. Storable b => Program -> CommandQueue -> String -> [Int] -> [Int] -> [b] -> IO ([Event] -> IO Event)
+createAsyncKernelWithParams :: Program -> CommandQueue -> String -> [Int] -> [Int] -> [KernelParameter] -> IO ([Event] -> IO Event)
 createAsyncKernelWithParams program queue initFun globalWorkRange localWorkRange params = do
     k <- clCreateKernel program initFun
     pushKernelParams k 0 params
