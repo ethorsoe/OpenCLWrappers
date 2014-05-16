@@ -41,7 +41,7 @@ Library
                    System.OpenCL.Wrappers
   build-depends: base < 4.7,
                  bytestring -any,
-                 mtl >= 2 && < 2.2
+                 mtl >= 2 && < 2.3
   exposed: True
   buildable: True
   hs-source-dirs: .
