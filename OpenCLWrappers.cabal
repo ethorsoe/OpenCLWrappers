@@ -38,7 +38,7 @@ Library
                    System.OpenCL.Wrappers.Helpers
                    System.OpenCL.Wrappers.Raw
                    System.OpenCL.Wrappers
-  build-depends: base < 4.7,
+  build-depends: base < 4.8,
                  bytestring -any,
                  mtl >= 2 && < 2.3
   exposed: True
