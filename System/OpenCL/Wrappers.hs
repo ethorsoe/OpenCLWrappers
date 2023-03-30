@@ -1,5 +1,5 @@
 {-|
-    The OpenCL system for open heterogenous data parallel supercomputing.
+    The OpenCL system for open heterogeneous data parallel supercomputing.
     
     A fork of the FFI wrapper OpenCLRaw by Jeff Heard of the Renaissance Computing Institute.
     

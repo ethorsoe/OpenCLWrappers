@@ -10,7 +10,7 @@ stability: Experimental
 homepage: https://github.com/jkarlson/OpenCLWrappers
 package-url:
 bug-reports: https://github.com/jkarlson/OpenCLWrappers/issues
-synopsis: The OpenCL Standard for heterogenous data-parallel computing
+synopsis: The OpenCL Standard for heterogeneous data-parallel computing
 description: Light opencl wrappers, a fork of the OpenCLRaw package.
 category: FFI
 author: J.R. Heard, Emil Karlson
